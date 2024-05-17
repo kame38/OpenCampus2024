@@ -1,4 +1,5 @@
 # coding: utf-8
+import os
 import cv2
 from datetime import datetime
 import picamera
@@ -32,7 +33,7 @@ def save_cutimg(img, contour, minlen=0):
     """
     # 日時を取得しファイル名に使用
     dt = datetime.now()
-    f_name = '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S'))
+    f_name = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))  #年月日時分秒.jpg
     imgs_cut = []
     for pt in contour:
         x, y, w, h = cv2.boundingRect(pt)
@@ -56,7 +57,7 @@ def save_img(img):
     同上
     """
     dt = datetime.now()
-    fname = '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S'))
+    fname = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))  #年月日時分秒.jpg
     cv2.imwrite(fname, img)
 
 
@@ -120,6 +121,8 @@ def take_photo():
                 contour = cv2.findContours(mask,
                                            cv2.RETR_EXTERNAL,
                                            cv2.CHAIN_APPROX_SIMPLE)[1]
+                
+                # !! Hough変換を使った直線検出をかませる !!
 
                 # 検出された物体全てを四角で囲み表示
                 stream_arr = stream.array.copy()

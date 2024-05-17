@@ -5,7 +5,7 @@ import shutil
 def classify_images(src_dir, dest_alpha, dest_cosmic):
 
     # Get list of images in the source directory
-    images = [img for img in os.listdir(src_dir) if img.lower().endswith(('png', 'jpg', 'jpeg', 'bmp', 'gif'))]
+    images = [img for img in os.listdir(src_dir) if img.lower().endswith('jpg')]
 
     print("************* Key Instructions *************\n")
     print("                Alpha    ->   1")

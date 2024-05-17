@@ -53,9 +53,5 @@ if __name__ == "__main__":
     dest_alpha = 'image_data/train/alpha'
     dest_cosmic = 'image_data/train/cosmic'
 
-    # Ensure destination directories exist
-    os.makedirs(dest_alpha, exist_ok=True)
-    os.makedirs(dest_cosmic, exist_ok=True)
-
     # Classify images
     classify_images(src_dir, dest_alpha, dest_cosmic)

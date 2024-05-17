@@ -156,3 +156,6 @@ def take_photo():
 if __name__ == '__main__':
     take_photo()
 
+
+##メモ : 直線の長さでthresholdを設定する
+## 直線部分を枠で囲む

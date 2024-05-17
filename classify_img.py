@@ -3,6 +3,7 @@ import cv2
 import shutil
 
 def classify_images(src_dir, dest_alpha, dest_cosmic):
+
     # Get list of images in the source directory
     images = [img for img in os.listdir(src_dir) if img.lower().endswith(('png', 'jpg', 'jpeg', 'bmp', 'gif'))]
 
@@ -45,13 +46,13 @@ def classify_images(src_dir, dest_alpha, dest_cosmic):
                 print(f"Deleted {image}")
                 break
             else:
-                print(f"Key {key} is not recognized. Press 1, 2, 0 or d.")              
+                print(f"Key {key} is not recognized. Try again.")              
 
 if __name__ == "__main__":
     # Directories
     src_dir = 'image_data/tmp'
-    dest_alpha = 'image_data/train/alpha'
-    dest_cosmic = 'image_data/train/cosmic'
+    dest_alpha = 'image_data/class/alpha'
+    dest_cosmic = 'image_data/class/cosmic'
 
     # Classify images
     classify_images(src_dir, dest_alpha, dest_cosmic)

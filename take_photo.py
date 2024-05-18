@@ -7,6 +7,7 @@ import picamera
 import picamera.array
 
 MIN_LEN = 20  # 検出する直線の最小長さ
+MAX_GAP = 200  # 直線として認識する最大の間隔
 GRAY_THR = 20  # 濃度変化の閾値
 CUT_MODE = True  # True:検出物体を切り取って保存, False:画像全体をそのまま保存
 
@@ -36,7 +37,7 @@ def save_cutimg(img, lines, minlen=0):
     """
     # 日時を取得しファイル名に使用
     dt = datetime.now()
-    f_name = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))  # 年月日時分秒.jpg
+    f_name = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))
     imgs_cut = []
     if lines is not None:
         for line in lines:
@@ -61,10 +62,10 @@ def save_img(img):
     """
     取得画像をそのまま保存
     引数:
-    同上
+    img: カメラ画像
     """
     dt = datetime.now()
-    fname = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))  # 年月日時分秒.jpg
+    fname = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))
     cv2.imwrite(fname, img)
 
 
@@ -126,7 +127,7 @@ def take_photo():
                 cv2.imshow('mask', mask)
 
                 # Hough変換を使った直線検出
-                lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=50, minLineLength=MIN_LEN, maxLineGap=10)
+                lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=50, minLineLength=MIN_LEN, maxLineGap=MAX_GAP)
                 
                 # 検出された直線を四角で囲み表示
                 stream_arr = stream.array.copy()
@@ -153,11 +154,11 @@ def take_photo():
                         num = save_cutimg(stream.array, lines, MIN_LEN)
                         if num > 0:
                             cnt += num
-                            print('  Captured: {} (sum: {})'.format(num, cnt))
+                            print('  {} new img added... ({} img in total now)'.format(num, cnt))
                     else:
                         save_img(stream.array)
                         cnt += 1
-                        print('  Captured: 1 (sum: {})'.format(cnt))
+                        print('  1 new img added... ({} img in total now)'.format(cnt))
 
     print('Initialized')
     take_photo()

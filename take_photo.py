@@ -64,11 +64,7 @@ def save_img(img):
 def take_photo():
     """
     背景撮影->物体撮影, 保存
-    キー入力: 
-    "p": 写真を撮る
-    "q": やめる
-    "r": 画面を回転（背景撮影時）
-    "i": 初めからやり直す（物体撮影時）
+    
     """
     cnt = 0
     # picamera起動
@@ -83,6 +79,12 @@ def take_photo():
                 # ストリーミング画像を取得、表示
                 camera.capture(stream, 'bgr', use_video_port=True)
                 cv2.imshow('Preview', stream.array)
+
+                print("************* Key Instructions *************\n")
+                print("              p : take Picture")
+                print("              r : Rotate camera")
+                print("              q : Quit\n")
+                print("********************************************")
 
                 wkey = cv2.waitKey(5) & 0xFF  # キー入力受付
 
@@ -127,6 +129,12 @@ def take_photo():
                 # 検出された物体全てを四角で囲み表示
                 stream_arr = stream.array.copy()
                 imshow_rect(stream_arr, contour, MIN_LEN)
+
+                print("************* Key Instructions *************\n")
+                print("              p : take Picture")
+                print("              i : Initialize (set background")
+                print("              q : Quit\n")
+                print("********************************************")
 
                 wkey = cv2.waitKey(5) & 0xFF
 

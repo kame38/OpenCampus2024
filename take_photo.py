@@ -5,43 +5,49 @@ from datetime import datetime
 import picamera
 import picamera.array
 
-MIN_LEN = 50  # 物体検出枠の1辺の最小長さ
+MIN_LEN = 20  # 検出する直線の最小長さ
 GRAY_THR = 20  # 濃度変化の閾値
 CUT_MODE = True  # True:検出物体を切り取って保存, False:画像全体をそのまま保存
 
 
-def imshow_rect(img, contour, minlen=0):
+def imshow_rect(img, lines, minlen=0):
     """
-    取得画像中の物体検出箇所全てを四角枠で囲む
+    取得画像中の直線検出箇所全てを四角枠で囲む
     引数:
     img: カメラ画像
-    contour: コンター
-    minlen: 検出の大きさの閾値（これより枠の1辺が短い箇所は除く）
+    lines: 検出された直線
+    minlen: 検出の大きさの閾値（これより直線が短い箇所は除く）
     """
-    for pt in contour:
-        x, y, w, h = cv2.boundingRect(pt)
-        if w < minlen and h < minlen: continue
-        cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    if lines is not None:
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                if abs(x2 - x1) < minlen and abs(y2 - y1) < minlen:
+                    continue
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
     cv2.imshow('Preview', img)
 
 
-def save_cutimg(img, contour, minlen=0):
+def save_cutimg(img, lines, minlen=0):
     """
-    取得画像中の物体検出箇所を全て切り抜き保存
+    取得画像中の直線検出箇所を全て切り抜き保存
     引数:
     同上
     """
     # 日時を取得しファイル名に使用
     dt = datetime.now()
-    f_name = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))  #年月日時分秒.jpg
+    f_name = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))  # 年月日時分秒.jpg
     imgs_cut = []
-    for pt in contour:
-        x, y, w, h = cv2.boundingRect(pt)
-        if w < minlen and h < minlen: continue
-        imgs_cut.append(img[y:y+h, x:x+w])
+    if lines is not None:
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                if abs(x2 - x1) < minlen and abs(y2 - y1) < minlen:
+                    continue
+                x, y, w, h = cv2.boundingRect(np.array([[x1, y1], [x2, y2]]))
+                imgs_cut.append(img[y:y+h, x:x+w])
 
     # 物体を切り抜いて保存
-    if not imgs_cut: return -1
+    if not imgs_cut:
+        return -1
     if len(imgs_cut) > 1:
         for i in range(len(imgs_cut)):
             cv2.imwrite(f_name[:-4]+'_'+str(i+1)+f_name[-4:], imgs_cut[i])
@@ -57,14 +63,13 @@ def save_img(img):
     同上
     """
     dt = datetime.now()
-    fname = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))  #年月日時分秒.jpg
+    fname = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))  # 年月日時分秒.jpg
     cv2.imwrite(fname, img)
 
 
 def take_photo():
     """
     背景撮影->物体撮影, 保存
-    
     """
     cnt = 0
     # picamera起動
@@ -119,16 +124,12 @@ def take_photo():
                                      cv2.THRESH_BINARY)[1]
                 cv2.imshow('mask', mask)
 
-                # 物体検出のためのコンター, マスク作成
-                contour = cv2.findContours(mask,
-                                           cv2.RETR_EXTERNAL,
-                                           cv2.CHAIN_APPROX_SIMPLE)[1]
+                # Hough変換を使った直線検出
+                lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=50, minLineLength=MIN_LEN, maxLineGap=10)
                 
-                # !! Hough変換を使った直線検出をかませる !!
-
-                # 検出された物体全てを四角で囲み表示
+                # 検出された直線を四角で囲み表示
                 stream_arr = stream.array.copy()
-                imshow_rect(stream_arr, contour, MIN_LEN)
+                imshow_rect(stream_arr, lines, MIN_LEN)
 
                 print("************* Key Instructions *************\n")
                 print("              p : take Picture")
@@ -148,7 +149,7 @@ def take_photo():
                     break
                 elif wkey == ord('p'):
                     if CUT_MODE:
-                        num = save_cutimg(stream.array, contour, MIN_LEN)
+                        num = save_cutimg(stream.array, lines, MIN_LEN)
                         if num > 0:
                             cnt += num
                             print('  Captured: {} (sum: {})'.format(num, cnt))
@@ -163,7 +164,3 @@ def take_photo():
 
 if __name__ == '__main__':
     take_photo()
-
-
-##メモ : 直線の長さでthresholdを設定する
-## 直線部分を枠で囲む

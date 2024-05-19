@@ -4,30 +4,29 @@ import re
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils
+from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision import datasets, transforms
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
-DATA_DIR = 'image_data'  # 画像フォルダ名
-CKPT_PROCESS = 'train_process.ckpt'  # 学習経過保存ファイル名
-CKPT_NET = 'trained_net.ckpt'  # 学習済みパラメータファイル名
-NUM_CLASSES = 3  # クラス数
-NUM_EPOCHS = 100  # 学習回数
+DATA_DIR = 'image_data/all'             # 画像フォルダ名
+CKPT_PROCESS = 'train_process.ckpt'     # 学習経過保存ファイル名
+CKPT_NET = 'trained_net.ckpt'           # 学習済みパラメータファイル名
+NUM_CLASSES = 3                         # クラス数  !!change here!!
+NUM_EPOCHS = 100                        # 学習回数
+LEARNING_RATE = 0.01                    # 学習率
 
-# よく変更するハイパーパラメータ
-LEARNING_RATE = 0.001  # 学習率
-MOMENTUM = 0.5  # 慣性
-
-checkpoint = {}  # 途中経過保存用変数
+checkpoint = {}                         # 途中経過保存用変数
 
 
 # 画像データ変換定義（かさ増し）
 # Resizeのサイズと, classifierの最初のLinear入力サイズが関連
-data_transforms = transforms.Compose([
-    transforms.Resize((112, 112)),  # リサイズ
-    transforms.RandomRotation(30),  # ランダムに回転
-    transforms.Grayscale(),  # 2値化
-    transforms.ToTensor(),  # テンソル化
-    transforms.Normalize(mean=[0.5], std=[0.5])  # 正規化（数字はテキトー）
+train_transforms = transforms.Compose([
+    transforms.Resize((112, 112)),                  # リサイズ
+    transforms.RandomRotation(30),                  # ランダムに回転
+    transforms.Grayscale(),                         # 2値化
+    transforms.ToTensor(),                          # テンソル化
+    transforms.Normalize(mean=[0.5], std=[0.5])     # 正規化（数字はテキトー）
 ])
 
 val_transforms = transforms.Compose([
@@ -37,22 +36,48 @@ val_transforms = transforms.Compose([
     transforms.Normalize(mean=[0.5], std=[0.5])
 ])
 
-# データセット作成
-train_dataset = datasets.ImageFolder(
-    root=os.path.join(DATA_DIR, 'train'),
-    transform=train_transforms
-)
+# allをtestとvalに分割し、データセット作成
+# train_dataset = datasets.ImageFolder(
+#     root=os.path.join(DATA_DIR, 'train'),
+#     transform=train_transforms
+# )
 
-val_dataset = datasets.ImageFolder(
-    root=os.path.join(DATA_DIR, 'val'),
-    transform=val_transforms
-)
+# val_dataset = datasets.ImageFolder(
+#     root=os.path.join(DATA_DIR, 'val'),
+#     transform=val_transforms
+# )
+
+# allをtestとvalにランダム分割し、データセット作成
+full_dataset = datasets.ImageFolder(root=DATA_DIR)
+dataset_size = len(full_dataset)
+train_size = int(0.8 * dataset_size)
+val_size = dataset_size - train_size
+train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])
+
+class CustomDataset(Dataset):
+    """データセットに変換を適用"""
+    def __init__(self, subset, transform=None):
+        self.subset = subset
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.subset)
+
+    def __getitem__(self, idx):
+        image, label = self.subset[idx]
+        if self.transform:
+            image = self.transform(image)
+        return image, label
+
+train_dataset = CustomDataset(train_dataset, transform=train_transforms)
+val_dataset = CustomDataset(val_dataset, transform=val_transforms)
+
 
 # ミニバッチ取得
 train_loader = torch.utils.data.DataLoader(
     dataset=train_dataset,
-    batch_size=10,  # 学習時のバッチサイズ
-    shuffle=True  # 訓練データをシャッフル
+    batch_size=10,      # 学習時のバッチサイズ
+    shuffle=True        # 訓練データをシャッフル
 )
 
 val_loader = torch.utils.data.DataLoader(
@@ -99,22 +124,19 @@ def main():
 
     # ネットワーク, 評価関数, 最適化関数設定
     net = NeuralNet(NUM_CLASSES).to(device)
-    criterion = nn.CrossEntropyLoss()  # 評価関数
-    optimizer = optim.SGD(  # 最適化アルゴリズム
+    criterion = nn.CrossEntropyLoss()       # 評価関数
+    optimizer = optim.Adam(                 # 最適化アルゴリズム
         net.parameters(),
         lr=LEARNING_RATE,
-        momentum=MOMENTUM,
-        weight_decay=5e-4
     )
 
     # 設定の表示
-    # print('  Device               :', device)
-    # print('  Dataset Class-Index  :', train_dataset.class_to_idx)
-    # print('  Network Model        :', re.findall('(.*)\(', str(net))[0])
-    # print('  Criterion            :', re.findall('(.*)\(', str(criterion))[0])
-    # print('  Optimizer            :', re.findall('(.*)\(', str(optimizer))[0])
-    # print('    -Learning Rate     :', LEARNING_RATE)
-    # print('    -Momentum          :', MOMENTUM)
+    print('  Device               :', device)
+    print('  Dataset Class-Index  :', train_dataset.class_to_idx)
+    print('  Network Model        :', re.findall('(.*)\(', str(net))[0])
+    print('  Criterion            :', re.findall('(.*)\(', str(criterion))[0])
+    print('  Optimizer            :', re.findall('(.*)\(', str(optimizer))[0])
+    print('  Learning Rate        :', LEARNING_RATE)
 
     t_loss_list = []
     t_acc_list = []
@@ -232,7 +254,7 @@ def graph():
              color='green', linestyle='--', label='v_acc')
     plt.legend()
     plt.xlabel('epoch')
-    plt.ylabel('acc')
+    plt.ylabel('accuracy')
     plt.title('Training and validation accuracy')
     plt.grid()
     plt.show()

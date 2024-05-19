@@ -154,11 +154,11 @@ def take_photo():
                         num = save_cutimg(stream.array, lines, MIN_LEN)
                         if num > 0:
                             cnt += num
-                            print('  {} new img added... ({} img in total now)'.format(num, cnt))
+                            print('{} new img added... ({} img in total now)'.format(num, cnt))
                     else:
                         save_img(stream.array)
                         cnt += 1
-                        print('  1 new img added... ({} img in total now)'.format(cnt))
+                        print('1 new img added... ({} img in total now)'.format(cnt))
 
     print('Initialized')
     take_photo()

@@ -2,7 +2,7 @@ import os
 import cv2
 import shutil
 
-def label_img(src_dir, dest_alpha, dest_cosmic):
+def classify_images(src_dir, dest_alpha, dest_cosmic):
 
     # Get list of images in the source directory
     images = [img for img in os.listdir(src_dir) if img.lower().endswith('jpg')]
@@ -51,8 +51,8 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
 if __name__ == "__main__":
     # Directories
     src_dir = 'image_data/tmp'
-    dest_alpha = 'image_data/all/alpha'
-    dest_cosmic = 'image_data/all/cosmic'
+    dest_alpha = 'image_data/class/alpha'
+    dest_cosmic = 'image_data/class/cosmic'
 
     # Classify images
-    label_img(src_dir, dest_alpha, dest_cosmic)
+    classify_images(src_dir, dest_alpha, dest_cosmic)

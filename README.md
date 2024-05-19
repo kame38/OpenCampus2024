@@ -12,13 +12,18 @@ picamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 
 - RaspberryPi 上で take_photo.py を実行し、学習に使う画像を撮影する。<br><br>
 - 飛跡の見えていない状態で背景を撮影したら、飛跡の撮影を行うと飛跡部分を切り取った画像が image_data/tmp に保存される。<br><br>
-- 背景画像との差分の絶対値を二値化しマスクをかけたものに対し、Hough 変換によって直線検出したものが緑の枠に囲まれて表示されている。<br><br>
+- 背景画像との差分の絶対値を二値化しマスクをかけたものに対し、Hough 変換によって直線検出したものが緑の枠に囲まれて表示されている.<br><br>
+
 </dd>
 
 ### <dd>Step2: データのラベリング
 
-- 撮影した画像データに対して label_img.py を実行し、ラベル付けを行う。<br><br>
-- ラベル付けされたデータは image_data/all/alpha(cosmic)に保存される。<br><br>
+- 撮影した画像データに対して label_img.py を実行し、ラベル付けを行う。
+
+- ラベル付けされたデータは image_data/all/alpha(cosmic)に保存される。
+
+<br><br>
+
 </dd>
 
 ## <dt>注意事項</dt>
@@ -27,12 +32,12 @@ picamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 
 コード作成をするにあたり、以下の文献を参考にしている。
 
--「Raspberry Pi 3 B+ ＆ PyTorch の深層学習で、カメラ映像内の複数物体をリアルタイム分類」
+- 「Raspberry ＆ PyTorch の深層学習で、カメラ映像内の複数物体をリアルタイム分類」
+  
+  https://qiita.com/AoChoco/items/a09b446460d95d5c9503
 
-https://qiita.com/AoChoco/items/a09b446460d95d5c9503
+- 「霧箱を用いた放射線の測定」
 
--「霧箱を用いた放射線の測定」
-
-https://osksn2.hep.sci.osaka-u.ac.jp/theses/soturon/sotsuron2021-1.pdf
+  https://osksn2.hep.sci.osaka-u.ac.jp/theses/soturon/sotsuron2021-1.pdf
 
 </dl>

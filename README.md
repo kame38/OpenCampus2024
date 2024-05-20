@@ -20,13 +20,31 @@ picamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 
 - 撮影した画像データに対して **label_img.py** を実行し、ラベル付けを行う。
 
-- ラベル付けされたデータは  **image_data/all/alpha** (cosmic) に保存される。
+- ラベル付けされたデータは  **image_data/all/alpha** (cosmic) に保存される。<br><br>
 
-<br><br>
+</dd>
+
+### <dd>Step3: PyTorchで学習
+
+- PCで **train_net.py** を実行し、作ったデータをもとに学習を行う。
+
+- 学習済みのパラメータは  **trained_net.ckpt** に保存され、途中から学習を再開できる。<br><br>
+
+</dd>
+
+### <dd>Step4: リアルタイム分類
+
+- RaspberryPi 上で **realtime_classification.py** を実行し、学習結果に基づいてリアルタイムでの分類を行う。<br><br>
+
+- フリーズのおそれがあるため、実行に使用するコア数（デフォルト4）の変更を推奨<br><br>
 
 </dd>
 
 ## <dt>学習モデル</dt>
+
+以下に示されている **畳み込みニューラルネットワーク（CNN）** を使用している
+
+<br><br>
 
 ## <dt>参考</dt>
 

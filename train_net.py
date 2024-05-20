@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 DATA_DIR = 'image_data/all'             # 画像フォルダ名
 CKPT_PROCESS = 'train_process.ckpt'     # 学習経過保存ファイル名
 CKPT_NET = 'trained_net.ckpt'           # 学習済みパラメータファイル名
-NUM_CLASSES = 3                         # クラス数  !!change here!!
+NUM_CLASSES = 2                         # クラス数
 NUM_EPOCHS = 100                        # 学習回数
 LEARNING_RATE = 0.01                    # 学習率
 

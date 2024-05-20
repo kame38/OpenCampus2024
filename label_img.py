@@ -50,7 +50,7 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
                 print(f"Deleted {image}")
                 break
             else:
-                print(f"Key {key} is not recognized. Try again.")              
+                print(f"Key {key} is not recognized. Try again...")              
 
 if __name__ == "__main__":
     label_img(SRC_DIR, DEST_ALPHA, DEST_COSMIC)

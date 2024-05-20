@@ -9,15 +9,16 @@ from torchvision import datasets, transforms
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
+from param import DATA_DIR, CKPT_PROCESS, CKPT_NET, NUM_CLASSES, NUM_EPOCHS, LEARNING_RATE
+"""
 DATA_DIR = 'image_data/all'             # 画像フォルダ名
 CKPT_PROCESS = 'train_process.ckpt'     # 学習経過保存ファイル名
 CKPT_NET = 'trained_net.ckpt'           # 学習済みパラメータファイル名
 NUM_CLASSES = 2                         # クラス数
 NUM_EPOCHS = 100                        # 学習回数
 LEARNING_RATE = 0.01                    # 学習率
-
+"""
 checkpoint = {}                         # 途中経過保存用変数
-
 
 # 画像データ変換定義（かさ増し）
 # Resizeのサイズと, classifierの最初のLinear入力サイズが関連

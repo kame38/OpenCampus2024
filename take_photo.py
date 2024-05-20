@@ -6,10 +6,13 @@ from datetime import datetime
 import picamera
 import picamera.array
 
-MIN_LEN = 20  # 検出する直線の最小長さ
-MAX_GAP = 200  # 直線として認識する最大の間隔
-GRAY_THR = 20  # 濃度変化の閾値
-CUT_MODE = True  # True:検出物体を切り取って保存, False:画像全体をそのまま保存
+from param import MIN_LEN, MAX_GAP, GRAY_THR, CUT_MODE
+"""
+MIN_LEN = 20        # 検出する直線の最小長さ
+MAX_GAP = 200       # 直線として認識する最大の間隔
+GRAY_THR = 20       # 濃度変化の閾値
+CUT_MODE = True     # True:検出物体を切り取って保存
+"""
 
 
 def imshow_rect(img, lines, minlen=0):

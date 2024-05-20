@@ -34,7 +34,7 @@ picamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 
 ### <dd>Step4: リアルタイム分類
 
-- RaspberryPi 上で **realtime_classification.py** を実行し、学習結果に基づいてリアルタイムでの分類を行う。<br><br>
+- RaspberryPi 上で **realtime_classification.py** を実行し、学習結果に基づいてリアルタイムでの分類を行う。
 
 - フリーズのおそれがあるため、実行に使用するコア数（デフォルト4）の変更を推奨<br><br>
 

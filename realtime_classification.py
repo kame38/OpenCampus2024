@@ -12,16 +12,18 @@ import torch.nn as nn
 import torch.utils
 from torchvision import transforms
 
+from param import CKPT_NET, OBJ_NAMES, MIN_LEN, GRAY_THR, CONTOUR_COUNT_MAX, SHOW_COLOR, NUM_CLASSES, PIXEL_LEN, CHANNELS
+"""
 CKPT_NET = 'trained_net.ckpt'               # 学習済みパラメータファイル
 OBJ_NAMES = ['alpha', 'cosmic']             # 各クラスの表示名
-MIN_LEN = 50
+MIN_LEN = 20
 GRAY_THR = 20
-CONTOUR_COUNT_MAX = 3       # バッチサイズ(一度に検出する物体の数)の上限
-SHOW_COLOR = (255, 191, 0)  # 枠の色(B,G,R)
-
-NUM_CLASSES = 2  # クラス数
-PIXEL_LEN = 112  # Resize後のサイズ(1辺)
-CHANNELS = 1     # 色のチャンネル数(BGR:3, グレースケール:1)
+CONTOUR_COUNT_MAX = 3                       # バッチサイズ(一度に検出する物体の数)の上限
+SHOW_COLOR = (255, 191, 0)                  # 枠の色(B,G,R)
+NUM_CLASSES = 2                             # クラス数
+PIXEL_LEN = 112                             # Resize後のサイズ(1辺)
+CHANNELS = 1                                # 色のチャンネル数(BGR:3, グレースケール:1)
+"""
 
 
 # 画像データ変換定義

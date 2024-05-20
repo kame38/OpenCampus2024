@@ -2,9 +2,12 @@ import os
 import cv2
 import shutil
 
+from param import SRC_DIR, DEST_ALPHA, DEST_COSMIC
+"""
 SRC_DIR = 'image_data/tmp'
 DEST_ALPHA = 'image_data/all/alpha'
 DEST_COSMIC = 'image_data/all/cosmic'
+"""
 
 
 def label_img(src_dir, dest_alpha, dest_cosmic):

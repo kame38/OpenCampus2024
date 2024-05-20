@@ -2,9 +2,20 @@ import os
 import cv2
 import shutil
 
-def label_img(src_dir, dest_alpha, dest_cosmic):
+SRC_DIR = 'image_data/tmp'
+DEST_ALPHA = 'image_data/all/alpha'
+DEST_COSMIC = 'image_data/all/cosmic'
 
-    # Get list of images in the source directory
+
+def label_img(src_dir, dest_alpha, dest_cosmic):
+    """
+    tmp内の画像をalphaとcosmicに分類
+    引数：
+    src_dir: 元画像の場所
+    dest_alpha: alphaの保存先
+    dest_cosmic: cosmicの保存先
+    """
+
     images = [img for img in os.listdir(src_dir) if img.lower().endswith('jpg')]
 
     print("************* Key Instructions *************\n")
@@ -16,20 +27,13 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
     
     for image in images:
         while True:
-            # Full path to the image
             image_path = os.path.join(src_dir, image)
-
-            # Read and display the image using OpenCV
             img = cv2.imread(image_path)
             cv2.imshow('Image', img)
 
-            # Wait for key press
             key = cv2.waitKey(0) & 0xFF
-
-            # Close the image window
             cv2.destroyAllWindows()
 
-            # Move the image based on the key press
             if key == ord('1'):
                 shutil.move(image_path, os.path.join(dest_alpha, image))
                 print(f"Moved {image} to {dest_alpha}")
@@ -49,10 +53,4 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
                 print(f"Key {key} is not recognized. Try again.")              
 
 if __name__ == "__main__":
-    # Directories
-    src_dir = 'image_data/tmp'
-    dest_alpha = 'image_data/all/alpha'
-    dest_cosmic = 'image_data/all/cosmic'
-
-    # Classify images
-    label_img(src_dir, dest_alpha, dest_cosmic)
+    label_img(SRC_DIR, DEST_ALPHA, DEST_COSMIC)

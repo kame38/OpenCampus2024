@@ -22,9 +22,10 @@ LEARNING_RATE = 0.01                    # 学習率
 # ================= realtime_classification.py ==============================
 CKPT_NET = 'trained_net.ckpt'               # 学習済みパラメータファイル
 OBJ_NAMES = ['alpha', 'cosmic']             # 各クラスの表示名
+# MAX_GAP = 200 
 # MIN_LEN = 20
 # GRAY_THR = 20
-CONTOUR_COUNT_MAX = 3       # バッチサイズ(一度に検出する物体の数)の上限
+RAY_COUNT_MAX = 3       # バッチサイズ(一度に検出する物体の数)の上限
 SHOW_COLOR = (255, 191, 0)  # 枠の色(B,G,R)
 NUM_CLASSES = 2  # クラス数
 PIXEL_LEN = 112  # Resize後のサイズ(1辺)

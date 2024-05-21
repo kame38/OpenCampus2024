@@ -3,10 +3,8 @@ import os
 from PIL import Image
 from time import sleep
 import cv2
-import picamera
-import picamera.array
 import torch
-# pytorchディレクトリで "export OMP_NUM_THREADS=1 or 2 or 3" 必須(デフォルトは4)
+# pytorchディレクトリで "export OMP_NUM_THREADS=4"(デフォルト)
 # 並列処理コア数は "print(torch.__config__.parallel_info())" で確認
 import torch.nn as nn
 import torch.utils
@@ -125,48 +123,54 @@ def realtime_classify():
 
     # 評価モード
     net.eval()
-    # picamera起動
-    with picamera.PiCamera() as camera:
-        camera.resolution = (480, 480)
-        # ストリーミング開始
-        with picamera.array.PiRGBArray(camera) as stream:
-            print('Setting background ...')
-            sleep(2)
 
-            camera.exposure_mode = 'off'  # ホワイトバランス固定
-            camera.capture(stream, 'bgr', use_video_port=True)
-            # 背景に設定
-            img_back = stream.array
+    # Webカメラを初期化
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        return
 
-            stream.seek(0)
-            stream.truncate()
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-            print('Start! Enter q to quit...' )
-            with torch.no_grad():
-                while True:
-                    camera.capture(stream, 'bgr', use_video_port=True)
-                    # これからの入力画像に対して背景差分
-                    img_target = stream.array
-                    # 物体とその位置を検出
-                    obj_imgs, positions = detect_ray(img_back, img_target)
-                    if obj_imgs:
-                        # 検出物体をネットワークの入力形式に変換
-                        obj_batch = batch_maker(obj_imgs, data_transforms)
-                        # 分類
-                        outputs = net(obj_batch)
-                        # 判定
-                        result = judge_what(img_target, outputs, positions)
-                        print('  Result:', result)
+    print('Setting background ...')
+    sleep(2)
 
-                    # 表示                    
-                    cv2.imshow('detection', img_target)
+    # 背景に設定
+    ret, img_back = cap.read()
+    if not ret:
+        print("Failed to grab frame.")
+        cap.release()
+        cv2.destroyAllWindows()
+        return
 
-                    if cv2.waitKey(200) == ord('q'):
-                        cv2.destroyAllWindows()
-                        return
+    print('Start! Enter q to quit...')
+    with torch.no_grad():
+        while True:
+            ret, img_target = cap.read()
+            if not ret:
+                print("Failed to grab frame.")
+                break
 
-                    stream.seek(0)
-                    stream.truncate()
+            # 物体とその位置を検出
+            obj_imgs, positions = detect_ray(img_back, img_target)
+            if obj_imgs:
+                # 検出物体をネットワークの入力形式に変換
+                obj_batch = batch_maker(obj_imgs, data_transforms)
+                # 分類
+                outputs = net(obj_batch)
+                # 判定
+                result = judge_what(img_target, outputs, positions)
+                print('  Result:', result)
+
+            # 表示                    
+            cv2.imshow('detection', img_target)
+
+            if cv2.waitKey(200) == ord('q'):
+                break
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":

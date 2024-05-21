@@ -77,94 +77,93 @@ def take_photo():
     背景撮影->物体撮影, 保存
     """
     cnt = 0
-    # picamera起動
-    with picamera.PiCamera() as camera:
-        camera.resolution = (480, 480)  # 解像度
-        camera.rotation = 0  # カメラの回転角(度)
-        # ストリーミング開始
-        with picamera.array.PiRGBArray(camera) as stream:
-            print('Set background ... ', end='', flush=True)
-            # 初めに背景を撮影
-            while True:
-                # ストリーミング画像を取得、表示
-                camera.capture(stream, 'bgr', use_video_port=True)
-                cv2.imshow('Preview', stream.array)
+    # Webカメラ起動
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        return
 
-                print("************* Key Instructions *************\n")
-                print("              p : take Picture")
-                print("              r : Rotate camera")
-                print("              q : Quit\n")
-                print("********************************************")
+    # 解像度を設定
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    
+    # 初めに背景を撮影
+    print('Set background ... ', end='', flush=True)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Failed to grab frame.")
+            break
+        cv2.imshow('Preview', frame)
 
-                wkey = cv2.waitKey(5) & 0xFF  # キー入力受付
+        print("************* Key Instructions *************\n")
+        print("              p : take Picture")
+        print("              q : Quit\n")
+        print("********************************************")
 
-                stream.seek(0)  # 新しくcaptureするための呪文x2
-                stream.truncate()
+        wkey = cv2.waitKey(5) & 0xFF  # キー入力受付
 
-                if wkey == ord('q'):
-                    cv2.destroyAllWindows()
-                    return print()
-                elif wkey == ord('r'):
-                    camera.rotation += 90
-                elif wkey == ord('p'):
-                    camera.exposure_mode = 'off'  # ホワイトバランス固定
-                    save_img(stream.array)
-                    # グレースケール化して背景画像に設定
-                    back_gray = cv2.cvtColor(stream.array, 
-                                             cv2.COLOR_BGR2GRAY)
-                    print('done')
-                    break
+        if wkey == ord('q'):
+            cv2.destroyAllWindows()
+            cap.release()
+            return
+        elif wkey == ord('p'):
+            save_img(frame)
+            # グレースケール化して背景画像に設定
+            back_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            print('done')
+            break
 
-            # 背景を設定し終えたら, カメラを動かさないように対象物撮影
-            print('Take photos!')
-            while True:
-                camera.capture(stream, 'bgr', use_video_port=True)
-                # 現在のフレームをグレースケール化
-                stream_gray = cv2.cvtColor(stream.array, 
-                                           cv2.COLOR_BGR2GRAY)
+    # 背景を設定し終えたら, カメラを動かさないように対象物撮影
+    print('Take photos!')
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Failed to grab frame.")
+            break
+        # 現在のフレームをグレースケール化
+        stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-                # 差分の絶対値を計算し二値化, マスク作成
-                diff = cv2.absdiff(stream_gray, back_gray)
-                mask = cv2.threshold(diff, GRAY_THR, 255, 
-                                     cv2.THRESH_BINARY)[1]
-                cv2.imshow('mask', mask)
+        # 差分の絶対値を計算し二値化, マスク作成
+        diff = cv2.absdiff(stream_gray, back_gray)
+        mask = cv2.threshold(diff, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
+        cv2.imshow('mask', mask)
 
-                # Hough変換を使った直線検出
-                lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=50, minLineLength=MIN_LEN, maxLineGap=MAX_GAP)
-                
-                # 検出された直線を四角で囲み表示
-                stream_arr = stream.array.copy()
-                imshow_rect(stream_arr, lines, MIN_LEN)
+        # Hough変換を使った直線検出
+        lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=50, minLineLength=MIN_LEN, maxLineGap=MAX_GAP)
+        
+        # 検出された直線を四角で囲み表示
+        imshow_rect(frame.copy(), lines, MIN_LEN)
 
-                print("************* Key Instructions *************\n")
-                print("              p : take Picture")
-                print("              i : Initialize (set background")
-                print("              q : Quit\n")
-                print("********************************************")
+        print("************* Key Instructions *************\n")
+        print("              p : take Picture")
+        print("              i : Initialize (set background")
+        print("              q : Quit\n")
+        print("********************************************")
 
-                wkey = cv2.waitKey(5) & 0xFF
+        wkey = cv2.waitKey(5) & 0xFF
 
-                stream.seek(0)
-                stream.truncate()
+        if wkey == ord('q'):
+            cv2.destroyAllWindows()
+            cap.release()
+            return
+        elif wkey == ord('i'):
+            break
+        elif wkey == ord('p'):
+            if CUT_MODE:
+                num = save_cutimg(frame, lines, MIN_LEN)
+                if num > 0:
+                    cnt += num
+                    print('{} new img added... ({} img in total now)'.format(num, cnt))
+            else:
+                save_img(frame)
+                cnt += 1
+                print('1 new img added... ({} img in total now)'.format(cnt))
 
-                if wkey == ord('q'):
-                    cv2.destroyAllWindows()
-                    return
-                elif wkey == ord('i'):
-                    break
-                elif wkey == ord('p'):
-                    if CUT_MODE:
-                        num = save_cutimg(stream.array, lines, MIN_LEN)
-                        if num > 0:
-                            cnt += num
-                            print('{} new img added... ({} img in total now)'.format(num, cnt))
-                    else:
-                        save_img(stream.array)
-                        cnt += 1
-                        print('1 new img added... ({} img in total now)'.format(cnt))
-
+    cap.release()
     print('Initialized')
     take_photo()
+
 
 
 if __name__ == '__main__':

@@ -22,6 +22,7 @@ SHOW_COLOR = (255, 191, 0)                  # 枠の色(B,G,R)
 NUM_CLASSES = 2                             # クラス数
 PIXEL_LEN = 112                             # Resize後のサイズ(1辺)
 CHANNELS = 1                                # 色のチャンネル数(BGR:3, グレースケール:1)
+>> param.pyを確認!!
 """
 from train_net import NeuralNet
 
@@ -47,9 +48,10 @@ def detect_ray(back, target):
     t_gray = cv2.cvtColor(target, cv2.COLOR_BGR2GRAY)
     # 差分を計算
     diff = cv2.absdiff(t_gray, b_gray)
-
+    # medianフィルターの適用
+    filter = cv2.medianBlur(diff, 5)
     # 閾値に従ってマスクを作成, 直線を抽出
-    mask = cv2.threshold(diff, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
+    mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
     cv2.imshow('mask', mask)
     
     # Hough変換を使った直線検出

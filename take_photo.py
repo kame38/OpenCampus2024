@@ -5,10 +5,11 @@ from datetime import datetime
 
 from param import MIN_LEN, MAX_GAP, GRAY_THR, CUT_MODE
 """
-MIN_LEN = 20        # 検出する直線の最小長さ
-MAX_GAP = 200       # 直線として認識する最大の間隔
-GRAY_THR = 20       # 濃度変化の閾値
-CUT_MODE = True     # True:検出物体を切り取って保存
+MIN_LEN = 30px        # 検出する直線の最小長さ
+MAX_GAP = 400px       # 直線として認識する最大の間隔
+GRAY_THR = 20         # 濃度変化の閾値
+CUT_MODE = True       # True:検出物体を切り取って保存
+>> param.pyを確認!!
 """
 
 def imshow_rect(img, lines, minlen=0):
@@ -76,11 +77,11 @@ def take_photo():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
-    print('Set background!\n', end='', flush=True)
-    print("************* Key Instructions *************\n")
-    print("              p : take Picture")
-    print("              q : Quit\n")
-    print("********************************************")
+    print('=============== Set background ===============\n', end='', flush=True)
+    print("+------------- Key Instructions -------------+")
+    print("|              p : take Picture              |")
+    print("|              q : Quit                      |")
+    print("+--------------------------------------------+")
 
     while True:
         ret, frame = cap.read()
@@ -89,8 +90,7 @@ def take_photo():
             break
         cv2.imshow('Preview', frame)
 
-        wkey = cv2.waitKey(5) & 0xFF  # キー入力受付
-        print(f"Key pressed: {wkey}")  # デバッグ出力
+        wkey = cv2.waitKey(5) & 0xFF  # キー入力受付 5ms
 
         if wkey == ord('q'):
             cv2.destroyAllWindows()
@@ -99,15 +99,15 @@ def take_photo():
         elif wkey == ord('p'):
             save_img(frame)
             back_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            print('done')
+            print('done!')
             break
 
-    print('Take photos!\n')
-    print("************* Key Instructions *************\n")
-    print("              p : take Picture")
-    print("              i : Initialize (set background")
-    print("              q : Quit\n")
-    print("********************************************")
+    print('============= Take photos! ===================')
+    print("+-------------  Key Instructions --------------+")
+    print("|              p : take Picture                |")
+    print("|              i : Initialize (set background) |")
+    print("|              q : Quit                        |")
+    print("+----------------------------------------------+")
 
     while True:
         ret, frame = cap.read()
@@ -117,14 +117,15 @@ def take_photo():
 
         stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         diff = cv2.absdiff(stream_gray, back_gray)
-        mask = cv2.threshold(diff, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
+        filter = cv2.medianBlur(diff, 5) # medianフィルターの適用(filter size = 5)
+        mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
         cv2.imshow('mask', mask)
 
-        lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=50, minLineLength=MIN_LEN, maxLineGap=MAX_GAP)
+        lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=100, minLineLength=MIN_LEN, maxLineGap=MAX_GAP)
+        # lines = filter_duplicate_lines(lines)
         imshow_rect(frame.copy(), lines, MIN_LEN)
 
-        wkey = cv2.waitKey(5) & 0xFF
-
+        wkey = cv2.waitKey(5) & 0xFF  # キー入力受付 5ms
         if wkey == ord('q'):
             cv2.destroyAllWindows()
             cap.release()
@@ -142,7 +143,6 @@ def take_photo():
                 cnt += 1
                 print('1 new img added... ({} img in total now)'.format(cnt))
 
-    cap.release()
     print('Initialized')
     take_photo()
 

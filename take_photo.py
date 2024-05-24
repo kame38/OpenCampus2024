@@ -3,14 +3,18 @@ import numpy as np
 import cv2
 from datetime import datetime
 
-from param import MIN_LEN, MAX_GAP, GRAY_THR, CUT_MODE
+from param import MIN_LEN, MAX_GAP, GRAY_THR, CUT_MODE, RHO, THETA
+
 """
-MIN_LEN = 30px        # 検出する直線の最小長さ
-MAX_GAP = 400px       # 直線として認識する最大の間隔
-GRAY_THR = 20         # 濃度変化の閾値
-CUT_MODE = True       # True:検出物体を切り取って保存
+MIN_LEN = 30px          # 検出する直線の最小長さ
+MAX_GAP = 200px         # 直線として認識する最大の間隔
+GRAY_THR = 20           # 濃度変化の閾値
+CUT_MODE = True         # True:検出物体を切り取って保存
+RHO = 2px               # Hough変換の距離解像度
+THETA = 2°              # Hough変換の角度解像度
 >> param.pyを確認!!
 """
+
 
 def imshow_rect(img, lines, minlen=0):
     """
@@ -26,7 +30,8 @@ def imshow_rect(img, lines, minlen=0):
                 if abs(x2 - x1) < minlen and abs(y2 - y1) < minlen:
                     continue
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-    cv2.imshow('Preview', img)
+    cv2.imshow("Preview", img)
+
 
 def save_cutimg(img, lines, minlen=0):
     """
@@ -35,7 +40,9 @@ def save_cutimg(img, lines, minlen=0):
     同上
     """
     dt = datetime.now()
-    f_name = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))
+    f_name = os.path.join(
+        "image_data/tmp", "{}.jpg".format(dt.strftime("%y%m%d%H%M%S"))
+    )
     imgs_cut = []
     if lines is not None:
         for line in lines:
@@ -43,16 +50,17 @@ def save_cutimg(img, lines, minlen=0):
                 if abs(x2 - x1) < minlen and abs(y2 - y1) < minlen:
                     continue
                 x, y, w, h = cv2.boundingRect(np.array([[x1, y1], [x2, y2]]))
-                imgs_cut.append(img[y:y+h, x:x+w])
+                imgs_cut.append(img[y : y + h, x : x + w])
 
     if not imgs_cut:
         return -1
     if len(imgs_cut) > 1:
         for i in range(len(imgs_cut)):
-            cv2.imwrite(f_name[:-4]+'_'+str(i+1)+f_name[-4:], imgs_cut[i])
+            cv2.imwrite(f_name[:-4] + "_" + str(i + 1) + f_name[-4:], imgs_cut[i])
     else:
         cv2.imwrite(f_name, imgs_cut[0])
     return len(imgs_cut)
+
 
 def save_img(img):
     """
@@ -61,8 +69,9 @@ def save_img(img):
     img: カメラ画像
     """
     dt = datetime.now()
-    fname = os.path.join('image_data/tmp', '{}.jpg'.format(dt.strftime('%y%m%d%H%M%S')))
+    fname = os.path.join("image_data/tmp", "{}.jpg".format(dt.strftime("%y%m%d%H%M%S")))
     cv2.imwrite(fname, img)
+
 
 def take_photo():
     """
@@ -76,8 +85,8 @@ def take_photo():
 
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    
-    print('=============== Set background ===============\n', end='', flush=True)
+
+    print("=============== Set background ===============\n", end="", flush=True)
     print("+------------- Key Instructions -------------+")
     print("|              p : take Picture              |")
     print("|              q : Quit                      |")
@@ -88,21 +97,21 @@ def take_photo():
         if not ret:
             print("Failed to grab frame.")
             break
-        cv2.imshow('Preview', frame)
+        cv2.imshow("Preview", frame)
 
         wkey = cv2.waitKey(5) & 0xFF  # キー入力受付 5ms
 
-        if wkey == ord('q'):
+        if wkey == ord("q"):
             cv2.destroyAllWindows()
             cap.release()
             return
-        elif wkey == ord('p'):
+        elif wkey == ord("p"):
             save_img(frame)
             back_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            print('done!')
+            print("done!")
             break
 
-    print('============= Take photos! ===================')
+    print("============= Take photos! ===================")
     print("+-------------  Key Instructions --------------+")
     print("|              p : take Picture                |")
     print("|              i : Initialize (set background) |")
@@ -117,34 +126,42 @@ def take_photo():
 
         stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         diff = cv2.absdiff(stream_gray, back_gray)
-        filter = cv2.medianBlur(diff, 5) # medianフィルターの適用(filter size = 5)
+        filter = cv2.medianBlur(diff, 5)  # medianフィルターの適用(filter size = 5)
         mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
-        cv2.imshow('mask', mask)
+        cv2.imshow("mask", mask)
 
-        lines = cv2.HoughLinesP(mask, 1, np.pi / 180, threshold=100, minLineLength=MIN_LEN, maxLineGap=MAX_GAP)
+        lines = cv2.HoughLinesP(
+            mask,
+            RHO,
+            THETA * np.pi,
+            threshold=100,
+            minLineLength=MIN_LEN,
+            maxLineGap=MAX_GAP,
+        )
         # lines = filter_duplicate_lines(lines)
         imshow_rect(frame.copy(), lines, MIN_LEN)
 
         wkey = cv2.waitKey(5) & 0xFF  # キー入力受付 5ms
-        if wkey == ord('q'):
+        if wkey == ord("q"):
             cv2.destroyAllWindows()
             cap.release()
             return
-        elif wkey == ord('i'):
+        elif wkey == ord("i"):
             break
-        elif wkey == ord('p'):
+        elif wkey == ord("p"):
             if CUT_MODE:
                 num = save_cutimg(frame, lines, MIN_LEN)
                 if num > 0:
                     cnt += num
-                    print('{} new img added... ({} img in total now)'.format(num, cnt))
+                    print("{} new img added... ({} img in total now)".format(num, cnt))
             else:
                 save_img(frame)
                 cnt += 1
-                print('1 new img added... ({} img in total now)'.format(cnt))
+                print("1 new img added... ({} img in total now)".format(cnt))
 
-    print('Initialized')
+    print("Initialized")
     take_photo()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     take_photo()

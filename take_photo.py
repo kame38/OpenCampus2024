@@ -4,23 +4,23 @@ import cv2
 from datetime import datetime
 
 from param import (
-    MIN_LEN,
-    MAX_GAP,
     GRAY_THR,
     CUT_MODE,
     RHO_HOUGH,
     THETA_HOUGH,
     COUNT_HOUGH,
+    MIN_LEN_HOUGH,
+    MAX_GAP_HOUGH,
 )
 
 """
-MIN_LEN = 30px          # 検出する直線の最小長さ
-MAX_GAP = 200px         # 直線として認識する最大の間隔
 GRAY_THR = 20           # 濃度変化の閾値
 CUT_MODE = True         # True:検出物体を切り取って保存
-RHO = 3px               # Hough変換の距離解像度
-THETA = 5°              # Hough変換の角度解像度
-COUNT_HOUGH = 1500      # Hough変換の閾値
+RHO_HOUGH = 10px              # Hough変換の距離解像度
+THETA_HOUGH = 20/180          # Hough変換の角度解像度
+COUNT_HOUGH = 200       # Hough変換の閾値
+MIN_LEN_HOUGH  = 30px    # 検出する直線の最小長さ
+MAX_GAP_HOUGH = 100px   # 直線として認識する最大の間隔
 >> param.pyを確認!!
 """
 
@@ -42,9 +42,10 @@ def imshow_rect(img, lines, minlen=0):
     cv2.imshow("Preview", img)
 
 
-def save_cutimg(img, lines, minlen=0):
+def save_cutimg(img, lines):
     """
-    取得画像中の直線検出箇所を全て切り抜き保存
+    取得画像中の直線検出箇所を切り抜き保存
+    小さい枠が大きい枠に内包される場合は大きい枠のみ保存
     引数:
     同上
     """
@@ -54,11 +55,19 @@ def save_cutimg(img, lines, minlen=0):
     )
     imgs_cut = []
     if lines is not None:
-        for line in lines:
-            for x1, y1, x2, y2 in line:
-                if abs(x2 - x1) < minlen and abs(y2 - y1) < minlen:
-                    continue
-                x, y, w, h = cv2.boundingRect(np.array([[x1, y1], [x2, y2]]))
+        for i, line1 in enumerate(lines):
+            x1, y1, x2, y2 = line1[0]
+            x, y, w, h = cv2.boundingRect(
+                np.array([[x1, y1], [x2, y2]])
+            )  # 直線を含む矩形領域の座標とサイズを取得
+            is_contained = False
+            for j, line2 in enumerate(lines):
+                if i != j:
+                    x3, y3, x4, y4 = line2[0]
+                    if x >= x3 and y >= y3 and x + w <= x4 and y + h <= y4:
+                        is_contained = True
+                        break
+            if not is_contained:
                 imgs_cut.append(img[y : y + h, x : x + w])
 
     if not imgs_cut:
@@ -135,20 +144,19 @@ def take_photo():
 
         stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         diff = cv2.absdiff(stream_gray, back_gray)
-        filter = cv2.medianBlur(diff, 5)  # medianフィルターの適用(filter size = 5)
+        filter = cv2.medianBlur(diff, 5)  # medianフィルターの適用(filter size:15x15)
         mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
         cv2.imshow("mask", mask)
 
         lines = cv2.HoughLinesP(
             mask,
             RHO_HOUGH,
-            THETA_HOUGH * np.pi,
+            THETA_HOUGH,
             threshold=COUNT_HOUGH,
-            minLineLength=MIN_LEN,
-            maxLineGap=MAX_GAP,
+            minLineLength=MIN_LEN_HOUGH,
+            maxLineGap=MAX_GAP_HOUGH,
         )
-        # lines = filter_duplicate_lines(lines)
-        imshow_rect(frame.copy(), lines, MIN_LEN)
+        imshow_rect(frame.copy(), lines, MIN_LEN_HOUGH)
 
         wkey = cv2.waitKey(5) & 0xFF  # キー入力受付 5ms
         if wkey == ord("q"):
@@ -159,7 +167,7 @@ def take_photo():
             break
         elif wkey == ord("p"):
             if CUT_MODE:
-                num = save_cutimg(frame, lines, MIN_LEN)
+                num = save_cutimg(frame, lines)
                 if num > 0:
                     cnt += num
                     print("{} new img added... ({} img in total now)".format(num, cnt))

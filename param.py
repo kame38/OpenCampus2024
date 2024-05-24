@@ -5,8 +5,9 @@ MIN_LEN = 30  # 検出する直線の最小長さ
 MAX_GAP = 200  # 直線として認識する最大の間隔
 GRAY_THR = 20  # 濃度変化の閾値
 CUT_MODE = True  # True:検出物体を切り取って保存, False:画像全体をそのまま保存
-RHO = 2  # Hough変換の距離解像度
-THETA = 1 / 90  # Hough変換の角度解像度
+RHO_HOUGH = 3  # Hough変換の距離解像度
+THETA_HOUGH = 5 / 180  # Hough変換の角度解像度
+COUNT_HOUGH = 1500  # Hough変換の閾値
 
 # ================= label_img.py ==============================
 SRC_DIR = "image_data/tmp"

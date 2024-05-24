@@ -3,15 +3,24 @@ import numpy as np
 import cv2
 from datetime import datetime
 
-from param import MIN_LEN, MAX_GAP, GRAY_THR, CUT_MODE, RHO, THETA
+from param import (
+    MIN_LEN,
+    MAX_GAP,
+    GRAY_THR,
+    CUT_MODE,
+    RHO_HOUGH,
+    THETA_HOUGH,
+    COUNT_HOUGH,
+)
 
 """
 MIN_LEN = 30px          # 検出する直線の最小長さ
 MAX_GAP = 200px         # 直線として認識する最大の間隔
 GRAY_THR = 20           # 濃度変化の閾値
 CUT_MODE = True         # True:検出物体を切り取って保存
-RHO = 2px               # Hough変換の距離解像度
-THETA = 2°              # Hough変換の角度解像度
+RHO = 3px               # Hough変換の距離解像度
+THETA = 5°              # Hough変換の角度解像度
+COUNT_HOUGH = 1500      # Hough変換の閾値
 >> param.pyを確認!!
 """
 
@@ -132,9 +141,9 @@ def take_photo():
 
         lines = cv2.HoughLinesP(
             mask,
-            RHO,
-            THETA * np.pi,
-            threshold=100,
+            RHO_HOUGH,
+            THETA_HOUGH * np.pi,
+            threshold=COUNT_HOUGH,
             minLineLength=MIN_LEN,
             maxLineGap=MAX_GAP,
         )

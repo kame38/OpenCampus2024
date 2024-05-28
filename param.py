@@ -4,11 +4,11 @@ import numpy as np
 # ================= take_photo.py ==============================
 GRAY_THR = 20  # 濃度変化の閾値
 CUT_MODE = True  # True:検出物体を切り取って保存, False:画像全体をそのまま保存
-RHO_HOUGH = 1  # Hough変換の距離解像度
-THETA_HOUGH = np.pi / 180  # Hough変換の角度解像度
-COUNT_HOUGH = 400  # Hough変換の閾値
+RHO_HOUGH = 5  # Hough変換の距離解像度
+THETA_HOUGH = 5 * np.pi / 180  # Hough変換の角度解像度
+COUNT_HOUGH = 300  # Hough変換の閾値
 MIN_LEN_HOUGH = 50  # 検出する直線の最小長さ
-MAX_GAP_HOUGH = 400  # 直線として認識する最大の間隔
+MAX_GAP_HOUGH = 200  # 直線として認識する最大の間隔
 
 # ================= label_img.py ==============================
 SRC_DIR = "image_data/tmp"

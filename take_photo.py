@@ -14,13 +14,14 @@ from param import (
 )
 
 """
-GRAY_THR = 20           # 濃度変化の閾値
-CUT_MODE = True         # True:検出物体を切り取って保存
-RHO_HOUGH = 10px              # Hough変換の距離解像度
-THETA_HOUGH = 20/180          # Hough変換の角度解像度
-COUNT_HOUGH = 200       # Hough変換の閾値
-MIN_LEN_HOUGH  = 30px    # 検出する直線の最小長さ
-MAX_GAP_HOUGH = 100px   # 直線として認識する最大の間隔
+GRAY_THR      : 濃度変化の閾値
+CUT_MODE      : True:検出物体を切り取って保存
+RHO_HOUGH     : Hough変換の距離解像度
+THETA_HOUGH   : Hough変換の角度解像度
+COUNT_HOUGH   : Hough変換の閾値
+MIN_LEN_HOUGH : 検出する直線の最小長さ
+MAX_GAP_HOUGH : 直線として認識する最大の間隔
+
 >> param.pyを確認!!
 """
 

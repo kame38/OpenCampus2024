@@ -2,7 +2,7 @@
 import numpy as np
 
 # ================= take_photo.py ==============================
-GRAY_THR = 20  # 濃度変化の閾値
+GRAY_THR = 10  # 濃度変化の閾値
 CUT_MODE = True  # True:検出物体を切り取って保存, False:画像全体をそのまま保存
 RHO_HOUGH = 5  # Hough変換の距離解像度
 THETA_HOUGH = 5 * np.pi / 180  # Hough変換の角度解像度

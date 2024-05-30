@@ -6,6 +6,13 @@ webcamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 <dl>
 
 ## <dt>実行環境</dt>
+- Web Camera: Buffalo BSW500M series
+- PC: NUC13ANKi5 CPU: 13th Gen Intel(R) Core(TM) i5-1340P, memory:32GB
+- Python 3.9.18
+- OpenCV 4.9.0
+- PyTorch 2.3.0
+  (as of2024 May 30)
+
 
 <br><br>
 

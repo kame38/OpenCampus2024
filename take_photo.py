@@ -116,6 +116,7 @@ def take_photo():
             print("Failed to grab frame.")
             break
         cv2.imshow("Preview", frame)
+        cv2.moveWindow("Preview", 0, 0)
 
         wkey = cv2.waitKey(5) & 0xFF  # キー入力受付 5ms
 
@@ -147,6 +148,7 @@ def take_photo():
         filter = cv2.medianBlur(diff, 5)  # medianフィルターの適用(filter size:15x15)
         mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
         cv2.imshow("mask", mask)
+        cv2.moveWindow("mask", 700, 0)
 
         lines = cv2.HoughLinesP(
             mask,

@@ -164,6 +164,8 @@ def take_photo():
             cap.release()
             return
         elif wkey == ord("i"):
+            cv2.destroyAllWindows()
+            cap.release()
             break
         elif wkey == ord("p"):
             if CUT_MODE:

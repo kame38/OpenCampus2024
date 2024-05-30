@@ -6,13 +6,12 @@ webcamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 <dl>
 
 ## <dt>実行環境</dt>
-- Web Camera: Buffalo BSW500M series
-- PC: NUC13ANKi5 CPU: 13th Gen Intel(R) Core(TM) i5-1340P, memory:32GB
+- **Web Camera**: Buffalo BSW500M
+- **PC**: NUC13ANKi5  (CPU: 13th Gen Intel(R) Core(TM) i5-1340P / memory:32GB)
 - Python 3.9.18
 - OpenCV 4.9.0
 - PyTorch 2.3.0
-  (as of2024 May 30)
-
+<br>(as of 2024/05/30 )
 
 <br><br>
 
@@ -38,7 +37,7 @@ webcamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 
 - **train_net.py** を実行し、作ったデータをもとに学習を行う。
 
-- 学習済みのパラメータは  **trained_net.ckpt** に保存され、途中から学習を再開できる。<br><br>
+- 学習済みのパラメーターは  **trained_net.ckpt** に保存され、途中から学習を再開できる。<br><br>
 
 </dd>
 
@@ -47,7 +46,7 @@ webcamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
   - **realtime_classification.py** を実行し、**trained_net.ckpt** での学習結果に基づいてリアルタイムでの分類を行う。
 
 - フリーズのおそれがあるため、実行に使用するコア数（デフォルト4）の変更を推奨
-- バッチサイズ (一度に検出する物体の数) の上限数によってはフリーズするおそれがあるので注意 
+- バッチサイズ (一度に検出する物体の数) の上限数によってはフリーズするおそれがあるので注意。
 <br><br>
 
 

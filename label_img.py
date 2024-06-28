@@ -3,6 +3,7 @@ import cv2
 import shutil
 
 from param import SRC_DIR, DEST_ALPHA, DEST_COSMIC
+
 """
 SRC_DIR = 'image_data/tmp'
 DEST_ALPHA = 'image_data/all/alpha'
@@ -19,41 +20,42 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
     dest_cosmic: cosmicの保存先
     """
 
-    images = [img for img in os.listdir(src_dir) if img.lower().endswith('jpg')]
+    images = [img for img in os.listdir(src_dir) if img.lower().endswith("jpg")]
 
     print("************* Key Instructions *************\n")
-    print("                Alpha    ->   1")
-    print("              Cosmic ray ->   2")
-    print("                 Skip    ->   0")
+    print("                Alpha    ->   a")
+    print("              Cosmic ray ->   c")
+    print("                 Skip    ->   s")
     print("                Delete   ->   d\n")
     print("********************************************")
-    
+
     for image in images:
         while True:
             image_path = os.path.join(src_dir, image)
             img = cv2.imread(image_path)
-            cv2.imshow('Image', img)
+            cv2.imshow("Image", img)
 
             key = cv2.waitKey(0) & 0xFF
             cv2.destroyAllWindows()
 
-            if key == ord('1'):
+            if key == ord("a"):
                 shutil.move(image_path, os.path.join(dest_alpha, image))
                 print(f"Moved {image} to {dest_alpha}")
                 break
-            elif key == ord('2'):
+            elif key == ord("c"):
                 shutil.move(image_path, os.path.join(dest_cosmic, image))
                 print(f"Moved {image} to {dest_cosmic}")
                 break
-            elif key == ord('0'):
+            elif key == ord("s"):
                 print(f"Skipped {image}")
                 break
-            elif key == ord('d'):
+            elif key == ord("d"):
                 os.remove(image_path)
                 print(f"Deleted {image}")
                 break
             else:
-                print(f"Key {key} is not recognized. Try again...")              
+                print(f"Key {key} is not recognized. Try again...")
+
 
 if __name__ == "__main__":
     label_img(SRC_DIR, DEST_ALPHA, DEST_COSMIC)

@@ -12,50 +12,65 @@ from param import (
     MIN_LEN_HOUGH,
     MAX_GAP_HOUGH,
     PADDING,
-)
-
-"""
-GRAY_THR      : 濃度変化の閾値
-CUT_MODE      : True:検出物体を切り取って保存
-RHO_HOUGH     : Hough変換の距離解像度
-THETA_HOUGH   : Hough変換の角度解像度
-COUNT_HOUGH   : Hough変換の閾値
-MIN_LEN_HOUGH : 検出する直線の最小長さ
-MAX_GAP_HOUGH : 直線として認識する最大の間隔
-PADDING       : 枠の大きさに余裕を持たせる
-
->> param.pyを確認!!
-"""
+)  # param.pyを確認!!
 
 
 def imshow_rect(img, lines, minlen=0, padding=PADDING):
     """
-    取得画像中の直線検出箇所全てを四角枠で囲む
+    取得画像中の直線から２本選んで四角枠で囲む
+    枠が重なっている場合は大きい枠のみ描画
     引数:
     img: カメラ画像
     lines: 検出された直線
     minlen: 検出の大きさの閾値（これより直線が短い箇所は除く）
+    padding: 枠の大きさに余裕を持たせる
     """
     if lines is not None:
-        # 投票数でソート
-        for line in lines[:2]:
+        valid_rects = []
+        for line in lines:
             for x1, y1, x2, y2 in line:
                 if abs(x2 - x1) < minlen and abs(y2 - y1) < minlen:
                     continue
-                cv2.rectangle(
-                    img,
-                    (x1 - padding, y1 - padding),
-                    (x2 + padding, y2 + padding),
-                    (0, 255, 0),
-                    2,
-                )
+                valid_rects.append((x1, y1, x2, y2))
+
+        # 重なりを考慮して大きい枠のみを選択
+        filtered_rects = []
+        for rect1 in valid_rects:
+            x1, y1, x2, y2 = rect1
+            rect1_area = (x2 - x1) * (y2 - y1)
+            is_contained = False
+            for rect2 in valid_rects:
+                if rect1 == rect2:
+                    continue
+                x3, y3, x4, y4 = rect2
+                rect2_area = (x4 - x3) * (y4 - y3)
+                if (
+                    x1 >= x3
+                    and y1 >= y3
+                    and x2 <= x4
+                    and y2 <= y4
+                    and rect1_area <= rect2_area
+                ):
+                    is_contained = True
+                    break
+            if not is_contained:
+                filtered_rects.append((x1, y1, x2, y2))
+
+        for x1, y1, x2, y2 in filtered_rects:
+            cv2.rectangle(
+                img,
+                (x1 - padding, y1 - padding),
+                (x2 + padding, y2 + padding),
+                (0, 255, 0),
+                2,
+            )
     cv2.imshow("Preview", img)
 
 
 def save_cutimg(img, lines, padding=PADDING):
     """
     取得画像中の直線検出箇所を切り抜き保存
-    小さい枠が大きい枠に内包される場合は大きい枠のみ保存
+    枠が重なっている場合は大きい枠のみ保存
     引数:
     同上
     """
@@ -65,20 +80,41 @@ def save_cutimg(img, lines, padding=PADDING):
     )
     imgs_cut = []
     if lines is not None:
-        for i, line1 in enumerate(lines[:2]):
-            x1, y1, x2, y2 = line1[0]
+        valid_rects = []
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                valid_rects.append((x1, y1, x2, y2))
+
+        # 重なりを考慮して大きい枠のみを選択
+        filtered_rects = []
+        for rect1 in valid_rects:
+            x1, y1, x2, y2 = rect1
+            rect1_area = (x2 - x1) * (y2 - y1)
+            is_contained = False
+            for rect2 in valid_rects:
+                if rect1 == rect2:
+                    continue
+                x3, y3, x4, y4 = rect2
+                rect2_area = (x4 - x3) * (y4 - y3)
+                if (
+                    x1 >= x3
+                    and y1 >= y3
+                    and x2 <= x4
+                    and y2 <= y4
+                    and rect1_area <= rect2_area
+                ):
+                    is_contained = True
+                    break
+            if not is_contained:
+                filtered_rects.append((x1, y1, x2, y2))
+
+        for x1, y1, x2, y2 in filtered_rects:
             x, y, w, h = cv2.boundingRect(
                 np.array([[x1 - padding, y1 - padding], [x2 + padding, y2 + padding]])
-            )  # 直線を含む矩形領域の座標とサイズを取得
-            is_contained = False
-            for j, line2 in enumerate(lines):
-                if i != j:
-                    x3, y3, x4, y4 = line2[0]
-                    if x >= x3 and y >= y3 and x + w <= x4 and y + h <= y4:
-                        is_contained = True
-                        break
-            if not is_contained:
-                imgs_cut.append(img[y : y + h, x : x + w])
+            )
+            cut_img = img[y : y + h, x : x + w]
+            if cut_img.size > 0:  # 画像が空でない場合に保存
+                imgs_cut.append(cut_img)
 
     if not imgs_cut:
         return -1
@@ -140,8 +176,8 @@ def take_photo():
             print("done!")
             break
 
-    # #既存の画像ファイルを背景画像として使う場合
-    # background_image_path = "image_data/tmp/240628131218.jpg"
+    # # 既存の画像ファイルを背景画像として使う場合
+    # background_image_path = "image_data/tmp/240628200357.jpg"
     # back_frame = cv2.imread(background_image_path)
     # if back_frame is None:
     #     print(
@@ -208,4 +244,3 @@ def take_photo():
 
 if __name__ == "__main__":
     take_photo()
-

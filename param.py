@@ -2,14 +2,14 @@
 import numpy as np
 
 # ================= take_photo.py ==============================
-GRAY_THR = 50  # 濃度変化の閾値
+GRAY_THR = 30  # 濃度変化の閾値
 CUT_MODE = True  # True:検出物体を切り取って保存, False:画像全体をそのまま保存
 RHO_HOUGH = 10  # Hough変換の距離解像度
 THETA_HOUGH = 10 * np.pi / 180  # Hough変換の角度解像度
-COUNT_HOUGH = 500  # Hough変換の閾値
-MIN_LEN_HOUGH = 80  # 検出する直線の最小長さ
-MAX_GAP_HOUGH = 100  # 直線として認識する最大の間隔
-PADDING = 10  # 枠の大きさに余裕を持たせる
+COUNT_HOUGH = 400  # Hough変換の閾値
+MIN_LEN_HOUGH = 20  # 検出する直線の最小長さ
+MAX_GAP_HOUGH = 50  # 直線として認識する最大の間隔
+PADDING = 200  # 枠の大きさに余裕を持たせる
 
 # ================= label_img.py ==============================
 SRC_DIR = "image_data/tmp"
@@ -27,12 +27,12 @@ LEARNING_RATE = 0.01  # 学習率
 # ================= realtime_classification.py ==============================
 CKPT_NET = "trained_net.ckpt"  # 学習済みパラメータファイル
 OBJ_NAMES = ["alpha", "cosmic"]  # 各クラスの表示名
-# MAX_GAP = 200
-# MIN_LEN = 20
-# GRAY_THR = 20
+# MAX_GAP
+# MIN_LEN
+# GRAY_THR
 RAY_COUNT_MAX = 3  # バッチサイズ(一度に検出する物体の数)の上限
 SHOW_COLOR = (255, 191, 0)  # 枠の色(B,G,R) green
 NUM_CLASSES = 2  # クラス数
 PIXEL_LEN = 112  # Resize後のサイズ(1辺)
 CHANNELS = 1  # 色のチャンネル数(BGR:3, グレースケール:1)
-# PADDING = 10  # 枠の大きさに余裕を持たせる
+# PADDING  # 枠の大きさに余裕を持たせる

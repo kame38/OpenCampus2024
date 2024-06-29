@@ -50,6 +50,8 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
             else:
                 print(f"Key {key} is not recognized. Try again...")
 
+    cv2.destroyAllWindows()  # すべてのウィンドウを閉じる
+
 
 if __name__ == "__main__":
     label_img(SRC_DIR, DEST_ALPHA, DEST_COSMIC)

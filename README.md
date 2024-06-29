@@ -14,7 +14,6 @@ webcamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 ```.sh
 (.venv) $ pip install -r requirements.txt
 ```
-<br><br>
 
 ## <dt>使い方</dt>
 

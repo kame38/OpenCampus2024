@@ -27,7 +27,7 @@ def imshow_rect(img, lines, padding=PADDING):
     """
     if lines is not None:
         valid_rects = []
-        for line in lines[:5]:
+        for line in lines:
             for x1, y1, x2, y2 in line:
                 valid_rects.append([x1, y1, x2, y2])
 
@@ -59,7 +59,7 @@ def save_cutimg(img, lines, padding=PADDING):
     imgs_cut = []
     if lines is not None:
         valid_rects = []
-        for line in lines[:5]:
+        for line in lines:
             for x1, y1, x2, y2 in line:
                 valid_rects.append((x1, y1, x2, y2))
 
@@ -160,9 +160,7 @@ def take_photo():
 
         stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         diff = cv2.absdiff(stream_gray, back_gray)
-        filter = cv2.medianBlur(
-            diff, FILTER_SIZE
-        )  # medianフィルターの適用 ( filter size: 5x5 )
+        filter = cv2.medianBlur(diff, FILTER_SIZE)  # medianフィルターの適用(ノイズ除去)
         mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
         cv2.imshow("mask", mask)
         cv2.moveWindow("mask", 700, 0)
@@ -175,6 +173,8 @@ def take_photo():
             minLineLength=MIN_LEN_HOUGH,
             maxLineGap=MAX_GAP_HOUGH,
         )
+
+        lines = lines[:5]  # 5本までの直線を検出
 
         imshow_rect(frame.copy(), lines, PADDING)
 

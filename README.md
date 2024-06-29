@@ -12,7 +12,7 @@ webcamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 - venvの仮想環境を作成後、有効化して以下を実行。
 
 ```.sh
-pip install -r requirements.txt
+(.venv) $ pip install -r requirements.txt
 ```
 
 <br>(as of 2024/05/30 )

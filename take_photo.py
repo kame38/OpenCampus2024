@@ -5,6 +5,7 @@ from datetime import datetime
 
 from param import (
     GRAY_THR,
+    FILTER_SIZE,
     CUT_MODE,
     RHO_HOUGH,
     THETA_HOUGH,
@@ -15,48 +16,25 @@ from param import (
 )  # param.pyを確認!!
 
 
-def imshow_rect(img, lines, minlen=0, padding=PADDING):
+def imshow_rect(img, lines, padding=PADDING):
     """
     取得画像中の直線から２本選んで四角枠で囲む
     枠が重なっている場合は大きい枠のみ描画
     引数:
     img: カメラ画像
     lines: 検出された直線
-    minlen: 検出の大きさの閾値（これより直線が短い箇所は除く）
     padding: 枠の大きさに余裕を持たせる
     """
     if lines is not None:
         valid_rects = []
-        for line in lines:
+        for line in lines[:5]:
             for x1, y1, x2, y2 in line:
-                if abs(x2 - x1) < minlen and abs(y2 - y1) < minlen:
-                    continue
-                valid_rects.append((x1, y1, x2, y2))
+                valid_rects.append([x1, y1, x2, y2])
 
-        # 重なりを考慮して大きい枠のみを選択
-        filtered_rects = []
-        for rect1 in valid_rects:
-            x1, y1, x2, y2 = rect1
-            rect1_area = (x2 - x1) * (y2 - y1)
-            is_contained = False
-            for rect2 in valid_rects:
-                if rect1 == rect2:
-                    continue
-                x3, y3, x4, y4 = rect2
-                rect2_area = (x4 - x3) * (y4 - y3)
-                if (
-                    x1 >= x3
-                    and y1 >= y3
-                    and x2 <= x4
-                    and y2 <= y4
-                    and rect1_area <= rect2_area
-                ):
-                    is_contained = True
-                    break
-            if not is_contained:
-                filtered_rects.append((x1, y1, x2, y2))
+        # 重なっている枠をまとめる(20%の重なりを許容)
+        rects, _ = cv2.groupRectangles(valid_rects, groupThreshold=1, eps=0.2)
 
-        for x1, y1, x2, y2 in filtered_rects:
+        for x1, y1, x2, y2 in rects:
             cv2.rectangle(
                 img,
                 (x1 - padding, y1 - padding),
@@ -81,34 +59,14 @@ def save_cutimg(img, lines, padding=PADDING):
     imgs_cut = []
     if lines is not None:
         valid_rects = []
-        for line in lines:
+        for line in lines[:5]:
             for x1, y1, x2, y2 in line:
                 valid_rects.append((x1, y1, x2, y2))
 
-        # 重なりを考慮して大きい枠のみを選択
-        filtered_rects = []
-        for rect1 in valid_rects:
-            x1, y1, x2, y2 = rect1
-            rect1_area = (x2 - x1) * (y2 - y1)
-            is_contained = False
-            for rect2 in valid_rects:
-                if rect1 == rect2:
-                    continue
-                x3, y3, x4, y4 = rect2
-                rect2_area = (x4 - x3) * (y4 - y3)
-                if (
-                    x1 >= x3
-                    and y1 >= y3
-                    and x2 <= x4
-                    and y2 <= y4
-                    and rect1_area <= rect2_area
-                ):
-                    is_contained = True
-                    break
-            if not is_contained:
-                filtered_rects.append((x1, y1, x2, y2))
+        # 重なっている枠をまとめる(20%の重なりを許容)
+        rects, _ = cv2.groupRectangles(valid_rects, groupThreshold=1, eps=0.2)
 
-        for x1, y1, x2, y2 in filtered_rects:
+        for x1, y1, x2, y2 in rects:
             x, y, w, h = cv2.boundingRect(
                 np.array([[x1 - padding, y1 - padding], [x2 + padding, y2 + padding]])
             )
@@ -202,7 +160,9 @@ def take_photo():
 
         stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         diff = cv2.absdiff(stream_gray, back_gray)
-        filter = cv2.medianBlur(diff, 5)  # medianフィルターの適用 ( filter size: 5x5 )
+        filter = cv2.medianBlur(
+            diff, FILTER_SIZE
+        )  # medianフィルターの適用 ( filter size: 5x5 )
         mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
         cv2.imshow("mask", mask)
         cv2.moveWindow("mask", 700, 0)
@@ -216,9 +176,9 @@ def take_photo():
             maxLineGap=MAX_GAP_HOUGH,
         )
 
-        imshow_rect(frame.copy(), lines, MIN_LEN_HOUGH, PADDING)
+        imshow_rect(frame.copy(), lines, PADDING)
 
-        wkey = cv2.waitKey(1000) & 0xFF  # キー入力受付 1.0s
+        wkey = cv2.waitKey(2000) & 0xFF  # 2秒待つ
         if wkey == ord("q"):
             cv2.destroyAllWindows()
             cap.release()

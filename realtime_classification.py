@@ -8,6 +8,7 @@ import torch
 # pytorchディレクトリで "export OMP_NUM_THREADS=4"(デフォルト)
 # 並列処理コア数は "print(torch.__config__.parallel_info())" で確認
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.utils
 from torchvision import transforms
 import numpy as np
@@ -15,6 +16,9 @@ import numpy as np
 from param import (
     CKPT_NET,
     OBJ_NAMES,
+    RHO_HOUGH,
+    THETA_HOUGH,
+    COUNT_HOUGH,
     MIN_LEN_HOUGH,
     MAX_GAP_HOUGH,
     GRAY_THR,
@@ -23,22 +27,9 @@ from param import (
     NUM_CLASSES,
     PIXEL_LEN,
     CHANNELS,
-)
+    PADDING,
+)  # param.pyを確認!!
 
-"""
-CKPT_NET              # 学習済みパラメータファイル
-OBJ_NAMES             # 各クラスの表示名
-MIN_LEN_HOUGH         # 検出する直線の最小長さ
-MAX_GAP_HOUGH         # 直線として認識する最大の間隔
-GRAY_THR              # 濃度変化の閾値
-RAY_COUNT_MAX         # バッチサイズ(一度に検出する物体の数)の上限
-SHOW_COLOR            # 枠の色(B,G,R)
-NUM_CLASSES           # クラス数
-PIXEL_LEN             # Resize後のサイズ(1辺)
-CHANNELS              # 色のチャンネル数(BGR:3, グレースケール:1)
-
->> param.pyを確認!!
-"""
 from train_net import NeuralNet
 
 # 画像データ変換定義
@@ -75,20 +66,46 @@ def detect_ray(back, target):
     # Hough変換を使った直線検出
     lines = cv2.HoughLinesP(
         mask,
-        1,
-        np.pi / 180,
-        threshold=50,
-        minLineLength=MIN_LEN_HOUGH,
-        maxLineGap=MAX_GAP_HOUGH,
+        RHO_HOUGH,
+        THETA_HOUGH,
+        COUNT_HOUGH,
+        MIN_LEN_HOUGH,
+        MAX_GAP_HOUGH,
     )
 
-    # 検出された直線の位置を計算し、画像を切り抜く
+    # 検出された直線から位置情報を抽出
+    pt_list = []
     if lines is not None:
+        valid_rects = []
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                valid_rects.append((x1, y1, x2, y2))
+
+        filtered_rects = []
+        for rect1 in valid_rects:
+            x1, y1, x2, y2 = rect1
+            rect1_area = (x2 - x1) * (y2 - y1)
+            is_contained = False
+            for rect2 in valid_rects:
+                if rect1 == rect2:
+                    continue
+                x3, y3, x4, y4 = rect2
+                rect2_area = (x4 - x3) * (y4 - y3)
+                if (
+                    x1 >= x3
+                    and y1 >= y3
+                    and x2 <= x4
+                    and y2 <= y4
+                    and rect1_area <= rect2_area
+                ):
+                    is_contained = True
+                    break
+            if not is_contained:
+                filtered_rects.append((x1, y1, x2, y2))
+
         pt_list = [
-            (x1, y1, x2 - x1, y2 - y1) for line in lines for x1, y1, x2, y2 in line
+            (x1, y1, x2 - x1, y2 - y1) for x1, y1, x2, y2 in filtered_rects
         ]
-    else:
-        pt_list = []
 
     pt_list = pt_list[:RAY_COUNT_MAX]
 

@@ -10,9 +10,10 @@ webcamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 - **PC**: NUC13ANKi5  (CPU: 13th Gen Intel(R) Core(TM) i5-1340P / 32GB)
 - Pythonの実行環境はrequirements.txtを参照。
 - venvの仮想環境を作成後、有効化して以下を実行。
-'''.sh
+
+```.sh
 pip install -r requirements.txt
-'''
+```
 
 <br>(as of 2024/05/30 )
 

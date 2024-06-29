@@ -11,6 +11,7 @@ from param import (
     COUNT_HOUGH,
     MIN_LEN_HOUGH,
     MAX_GAP_HOUGH,
+    PADDING,
 )
 
 """
@@ -21,12 +22,13 @@ THETA_HOUGH   : Hough変換の角度解像度
 COUNT_HOUGH   : Hough変換の閾値
 MIN_LEN_HOUGH : 検出する直線の最小長さ
 MAX_GAP_HOUGH : 直線として認識する最大の間隔
+PADDING       : 枠の大きさに余裕を持たせる
 
 >> param.pyを確認!!
 """
 
 
-def imshow_rect(img, lines, minlen=0):
+def imshow_rect(img, lines, minlen=0, padding=PADDING):
     """
     取得画像中の直線検出箇所全てを四角枠で囲む
     引数:
@@ -35,15 +37,22 @@ def imshow_rect(img, lines, minlen=0):
     minlen: 検出の大きさの閾値（これより直線が短い箇所は除く）
     """
     if lines is not None:
-        for line in lines:
+        # 投票数でソート
+        for line in lines[:2]:
             for x1, y1, x2, y2 in line:
                 if abs(x2 - x1) < minlen and abs(y2 - y1) < minlen:
                     continue
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.rectangle(
+                    img,
+                    (x1 - padding, y1 - padding),
+                    (x2 + padding, y2 + padding),
+                    (0, 255, 0),
+                    2,
+                )
     cv2.imshow("Preview", img)
 
 
-def save_cutimg(img, lines):
+def save_cutimg(img, lines, padding=PADDING):
     """
     取得画像中の直線検出箇所を切り抜き保存
     小さい枠が大きい枠に内包される場合は大きい枠のみ保存
@@ -56,10 +65,10 @@ def save_cutimg(img, lines):
     )
     imgs_cut = []
     if lines is not None:
-        for i, line1 in enumerate(lines):
+        for i, line1 in enumerate(lines[:2]):
             x1, y1, x2, y2 = line1[0]
             x, y, w, h = cv2.boundingRect(
-                np.array([[x1, y1], [x2, y2]])
+                np.array([[x1 - padding, y1 - padding], [x2 + padding, y2 + padding]])
             )  # 直線を含む矩形領域の座標とサイズを取得
             is_contained = False
             for j, line2 in enumerate(lines):
@@ -131,6 +140,17 @@ def take_photo():
             print("done!")
             break
 
+    # #既存の画像ファイルを背景画像として使う場合
+    # background_image_path = "image_data/tmp/240628131218.jpg"
+    # back_frame = cv2.imread(background_image_path)
+    # if back_frame is None:
+    #     print(
+    #         f"Error: Could not read the background image from {background_image_path}"
+    #     )
+    #     return
+
+    # back_gray = cv2.cvtColor(back_frame, cv2.COLOR_BGR2GRAY)
+
     print("============= Take photos! ===================")
     print("+-------------  Key Instructions --------------+")
     print("|              p : take Picture                |")
@@ -146,7 +166,7 @@ def take_photo():
 
         stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         diff = cv2.absdiff(stream_gray, back_gray)
-        filter = cv2.medianBlur(diff, 5)  # medianフィルターの適用(filter size:15x15)
+        filter = cv2.medianBlur(diff, 5)  # medianフィルターの適用 ( filter size: 5x5 )
         mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
         cv2.imshow("mask", mask)
         cv2.moveWindow("mask", 700, 0)
@@ -159,9 +179,10 @@ def take_photo():
             minLineLength=MIN_LEN_HOUGH,
             maxLineGap=MAX_GAP_HOUGH,
         )
-        imshow_rect(frame.copy(), lines, MIN_LEN_HOUGH)
 
-        wkey = cv2.waitKey(5) & 0xFF  # キー入力受付 5ms
+        imshow_rect(frame.copy(), lines, MIN_LEN_HOUGH, PADDING)
+
+        wkey = cv2.waitKey(1000) & 0xFF  # キー入力受付 1.0s
         if wkey == ord("q"):
             cv2.destroyAllWindows()
             cap.release()
@@ -187,3 +208,4 @@ def take_photo():
 
 if __name__ == "__main__":
     take_photo()
+

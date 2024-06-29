@@ -2,13 +2,14 @@
 import numpy as np
 
 # ================= take_photo.py ==============================
-GRAY_THR = 10  # 濃度変化の閾値
+GRAY_THR = 50  # 濃度変化の閾値
 CUT_MODE = True  # True:検出物体を切り取って保存, False:画像全体をそのまま保存
-RHO_HOUGH = 5  # Hough変換の距離解像度
-THETA_HOUGH = 5 * np.pi / 180  # Hough変換の角度解像度
-COUNT_HOUGH = 300  # Hough変換の閾値
-MIN_LEN_HOUGH = 50  # 検出する直線の最小長さ
-MAX_GAP_HOUGH = 200  # 直線として認識する最大の間隔
+RHO_HOUGH = 10  # Hough変換の距離解像度
+THETA_HOUGH = 10 * np.pi / 180  # Hough変換の角度解像度
+COUNT_HOUGH = 500  # Hough変換の閾値
+MIN_LEN_HOUGH = 80  # 検出する直線の最小長さ
+MAX_GAP_HOUGH = 100  # 直線として認識する最大の間隔
+PADDING = 10  # 枠の大きさに余裕を持たせる
 
 # ================= label_img.py ==============================
 SRC_DIR = "image_data/tmp"
@@ -34,3 +35,4 @@ SHOW_COLOR = (255, 191, 0)  # 枠の色(B,G,R) green
 NUM_CLASSES = 2  # クラス数
 PIXEL_LEN = 112  # Resize後のサイズ(1辺)
 CHANNELS = 1  # 色のチャンネル数(BGR:3, グレースケール:1)
+# PADDING = 10  # 枠の大きさに余裕を持たせる

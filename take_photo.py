@@ -19,7 +19,7 @@ from param import (
 def imshow_rect(img, lines, padding=PADDING):
     """
     取得画像中の直線から２本選んで四角枠で囲む
-    枠が重なっている場合は大きい枠のみ描画
+    枠が重なっている場合は枠をまとめる
     引数:
     img: カメラ画像
     lines: 検出された直線
@@ -34,7 +34,7 @@ def imshow_rect(img, lines, padding=PADDING):
         # 重なっている枠をまとめる(20%の重なりを許容)
         rects, _ = cv2.groupRectangles(valid_rects, groupThreshold=1, eps=0.2)
 
-        for x1, y1, x2, y2 in rects:
+        for x1, y1, x2, y2 in rects[:2]:  # 2本までの直線を表示
             cv2.rectangle(
                 img,
                 (x1 - padding, y1 - padding),
@@ -48,7 +48,7 @@ def imshow_rect(img, lines, padding=PADDING):
 def save_cutimg(img, lines, padding=PADDING):
     """
     取得画像中の直線検出箇所を切り抜き保存
-    枠が重なっている場合は大きい枠のみ保存
+    枠が重なっている場合は枠をまとめる
     引数:
     同上
     """
@@ -66,7 +66,7 @@ def save_cutimg(img, lines, padding=PADDING):
         # 重なっている枠をまとめる(20%の重なりを許容)
         rects, _ = cv2.groupRectangles(valid_rects, groupThreshold=1, eps=0.2)
 
-        for x1, y1, x2, y2 in rects:
+        for x1, y1, x2, y2 in rects[:2]:  # 2本までの直線を切り取る
             x, y, w, h = cv2.boundingRect(
                 np.array([[x1 - padding, y1 - padding], [x2 + padding, y2 + padding]])
             )
@@ -174,9 +174,7 @@ def take_photo():
             maxLineGap=MAX_GAP_HOUGH,
         )
 
-        lines = lines[:5]  # 5本までの直線を検出
-
-        imshow_rect(frame.copy(), lines, PADDING)
+        imshow_rect(frame.copy(), lines, PADDING)  # 5本までの直線を表示
 
         wkey = cv2.waitKey(2000) & 0xFF  # 2秒待つ
         if wkey == ord("q"):

@@ -13,12 +13,13 @@ from param import (
     MIN_LEN_HOUGH,
     MAX_GAP_HOUGH,
     PADDING,
+    RAY_COUNT_MAX,
 )  # param.pyを確認!!
 
 
 def imshow_rect(img, lines, padding=PADDING):
     """
-    取得画像中の直線から２本選んで四角枠で囲む
+    取得画像中の直線から2本選んで四角枠で囲む
     枠が重なっている場合は枠をまとめる
     引数:
     img: カメラ画像
@@ -34,7 +35,7 @@ def imshow_rect(img, lines, padding=PADDING):
         # 重なっている枠をまとめる(20%の重なりを許容)
         rects, _ = cv2.groupRectangles(valid_rects, groupThreshold=1, eps=0.2)
 
-        for x1, y1, x2, y2 in rects[:2]:  # 2本までの直線を表示
+        for x1, y1, x2, y2 in rects[:RAY_COUNT_MAX]:  # 2本までの直線を表示
             cv2.rectangle(
                 img,
                 (x1 - padding, y1 - padding),
@@ -66,7 +67,7 @@ def save_cutimg(img, lines, padding=PADDING):
         # 重なっている枠をまとめる(20%の重なりを許容)
         rects, _ = cv2.groupRectangles(valid_rects, groupThreshold=1, eps=0.2)
 
-        for x1, y1, x2, y2 in rects[:2]:  # 2本までの直線を切り取る
+        for x1, y1, x2, y2 in rects[:RAY_COUNT_MAX]:  # 2本までの直線を切り取る
             x, y, w, h = cv2.boundingRect(
                 np.array([[x1 - padding, y1 - padding], [x2 + padding, y2 + padding]])
             )

@@ -25,9 +25,9 @@ from param import (
     RAY_COUNT_MAX,
     SHOW_COLOR,
     NUM_CLASSES,
-    PIXEL_LEN,
     CHANNELS,
     PADDING,
+    FILTER_SIZE,
 )  # param.pyを確認!!
 
 from train_net import NeuralNet
@@ -36,7 +36,7 @@ from train_net import NeuralNet
 # Resizeと, classifierの最初のLinear入力が関連
 data_transforms = transforms.Compose(
     [
-        transforms.Resize((PIXEL_LEN, PIXEL_LEN)),
+        transforms.Resize((112, 112)),
         transforms.Grayscale(),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5], std=[0.5]),
@@ -51,14 +51,13 @@ def detect_ray(back, target):
     back: 入力背景画像(カラー)
     target: 背景差分対象の画像(カラー) <-- 複数の物体を切り抜き, カラー画像タプルにまとめる
     """
-    print("Detecting Rays ...")
     # 2値化
     b_gray = cv2.cvtColor(back, cv2.COLOR_BGR2GRAY)
     t_gray = cv2.cvtColor(target, cv2.COLOR_BGR2GRAY)
     # 差分を計算
     diff = cv2.absdiff(t_gray, b_gray)
     # medianフィルターの適用
-    filter = cv2.medianBlur(diff, 5)
+    filter = cv2.medianBlur(diff, FILTER_SIZE)
     # 閾値に従ってマスクを作成, 直線を抽出
     mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
     cv2.imshow("mask", mask)
@@ -73,50 +72,31 @@ def detect_ray(back, target):
         MAX_GAP_HOUGH,
     )
 
-    # 検出された直線から位置情報を抽出
+    # 検出された直線から2本選んで位置情報を抽出
     pt_list = []
     if lines is not None:
         valid_rects = []
         for line in lines:
             for x1, y1, x2, y2 in line:
-                valid_rects.append((x1, y1, x2, y2))
+                valid_rects.append([x1, y1, x2, y2])
 
-        filtered_rects = []
-        for rect1 in valid_rects:
-            x1, y1, x2, y2 = rect1
-            rect1_area = (x2 - x1) * (y2 - y1)
-            is_contained = False
-            for rect2 in valid_rects:
-                if rect1 == rect2:
-                    continue
-                x3, y3, x4, y4 = rect2
-                rect2_area = (x4 - x3) * (y4 - y3)
-                if (
-                    x1 >= x3
-                    and y1 >= y3
-                    and x2 <= x4
-                    and y2 <= y4
-                    and rect1_area <= rect2_area
-                ):
-                    is_contained = True
-                    break
-            if not is_contained:
-                filtered_rects.append((x1, y1, x2, y2))
+        # 重なっている枠をまとめる(20%の重なりを許容)
+        rects, _ = cv2.groupRectangles(valid_rects, groupThreshold=1, eps=0.2)
 
-        pt_list = [
-            (x1, y1, x2 - x1, y2 - y1) for x1, y1, x2, y2 in filtered_rects
-        ]
+        for x1, y1, x2, y2 in rects[:2]:  # 2本までの直線を選ぶ
+            x, y, w, h = cv2.boundingRect(np.array([[x1, y1], [x2, y2]]))
+            pt_list.append((x, y, w, h))
 
     pt_list = pt_list[:RAY_COUNT_MAX]
 
     # 位置情報に従ってフレーム切り抜き, PIL画像のタプルに変換して返す
-    obj_imgaes = tuple(
+    obj_images = tuple(
         map(
             lambda x: Image.fromarray(target[x[1] : x[1] + x[3], x[0] : x[0] + x[2]]),
             pt_list,
         )
     )
-    return (obj_imgaes, pt_list)
+    return (obj_images, pt_list)
 
 
 def batch_maker(tuple_images, transform):
@@ -127,7 +107,7 @@ def batch_maker(tuple_images, transform):
     transform: torchvision画像変換定義
     """
     return torch.cat([transform(img) for img in tuple_images]).view(
-        -1, CHANNELS, PIXEL_LEN, PIXEL_LEN
+        -1, CHANNELS, 112, 112
     )
 
 
@@ -138,7 +118,6 @@ def judge_what(img, probs_list, pos_list):
     probs_list: 確率の二次配列. バッチ形式
     pos_list: 位置の二次配列. バッチ形式
     """
-    print("Judging objects ...")
     # 最も高い確率とそのインデックスのリストに変換
     ip_list = list(
         map(
@@ -149,19 +128,57 @@ def judge_what(img, probs_list, pos_list):
 
     # インデックスを物体名に変換, 物体の位置に物体名と確信度を書き込み表示
     for (idx, prob), pos in zip(ip_list, pos_list):
-        cv2.rectangle(
-            img, (pos[0], pos[1]), (pos[0] + pos[2], pos[1] + pos[3]), SHOW_COLOR, 2
-        )
+        x, y, w, h = pos
+        x -= PADDING
+        y -= PADDING
+        w += 2 * PADDING
+        h += 2 * PADDING
+        cv2.rectangle(img, (x, y), (x + w, y + h), SHOW_COLOR, 2)
         cv2.putText(
             img,
             "%s:%.1f%%" % (OBJ_NAMES[idx], prob * 100),
-            (pos[0] + 5, pos[1] + 20),
+            (x + 5, y + 20),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.8,
             SHOW_COLOR,
             thickness=2,
         )
     return ip_list
+
+
+def set_background(cap):
+    """
+    カメラのプレビューを表示し、キー操作で背景画像を設定する関数
+    引数:
+    cap: カメラキャプチャオブジェクト
+    戻り値:
+    背景画像
+    """
+    print("=============== Set background ===============\n", end="", flush=True)
+    print("+------------- Key Instructions -------------+")
+    print("|              p : take Picture              |")
+    print("|              q : Quit                      |")
+    print("+--------------------------------------------+")
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Failed to grab frame.")
+            break
+        cv2.imshow("Preview", frame)
+        cv2.moveWindow("Preview", 0, 0)
+
+        wkey = cv2.waitKey(5) & 0xFF  # キー入力受付 5ms
+
+        if wkey == ord("q"):
+            cv2.destroyAllWindows()
+            cap.release()
+            return None
+        elif wkey == ord("p"):
+            cv2.imwrite("background.jpg", frame)
+            print("done!")
+            cv2.destroyAllWindows()
+            return frame
 
 
 def realtime_classify():
@@ -195,15 +212,9 @@ def realtime_classify():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-    print("Setting background ...")
-    sleep(2)
-
-    # 背景に設定
-    ret, img_back = cap.read()
-    if not ret:
-        print("Failed to grab frame.")
-        cap.release()
-        cv2.destroyAllWindows()
+    img_back = set_background(cap)
+    if img_back is None:
+        print("Background setting cancelled...")
         return
 
     print("Start! Enter q to quit...")
@@ -223,12 +234,12 @@ def realtime_classify():
                 outputs = net(obj_batch)
                 # 判定
                 result = judge_what(img_target, outputs, positions)
-                print("  Result:", result)
+                # print("  Result:", result)
 
             # 表示
             cv2.imshow("detection", img_target)
 
-            if cv2.waitKey(200) == ord("q"):
+            if cv2.waitKey(2000) == ord("q"):
                 break
 
     cap.release()
@@ -239,4 +250,6 @@ if __name__ == "__main__":
     try:
         realtime_classify()
     except KeyboardInterrupt:
+        print("Exit...")
+    finally:
         cv2.destroyAllWindows()

@@ -11,6 +11,7 @@ COUNT_HOUGH = 300  # Hough変換の閾値
 MIN_LEN_HOUGH = 50  # 検出する直線の最小長さ
 MAX_GAP_HOUGH = 200  # 直線として認識する最大の間隔
 PADDING = 150  # 枠の大きさに余裕を持たせる
+# RAY_COUNT_MAX = 2  # バッチサイズ(一度に検出する物体の数)
 
 # ================= label_img.py ==============================
 SRC_DIR = "image_data/tmp"
@@ -34,9 +35,9 @@ OBJ_NAMES = ["alpha", "cosmic"]  # 各クラスの表示名
 # MIN_LEN_HOUGH
 # MAX_GAP_HOUGH
 # GRAY_THR
-RAY_COUNT_MAX = 3  # バッチサイズ(一度に検出する物体の数)の上限
+RAY_COUNT_MAX = 2  # バッチサイズ(一度に検出する物体の数)の上限
 SHOW_COLOR = (255, 191, 0)  # 枠の色(B,G,R) green
 NUM_CLASSES = 2  # クラス数
-PIXEL_LEN = 112  # Resize後のサイズ(1辺)
 CHANNELS = 1  # 色のチャンネル数(BGR:3, グレースケール:1)
 # PADDING  # 枠の大きさに余裕を持たせる
+# FILTER_SIZE  # medianフィルタのサイズ

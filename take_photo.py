@@ -1,3 +1,6 @@
+# ペルチェ(peltie)/液体窒素(n2)霧箱用のリアルタイム飛跡検出プログラム
+# ペルチェ/液チ 霧箱を使う場合は、277/278 行目以降を使う
+
 import os
 import numpy as np
 import cv2
@@ -96,8 +99,9 @@ def save_img(img):
     cv2.imwrite(fname, img)
 
 
-def take_photo():
+def take_photo_peltie():
     """
+    ペルチェ用の画像を撮影する
     背景撮影->物体撮影, 保存
     """
     cnt = 0
@@ -198,8 +202,77 @@ def take_photo():
                 print("1 new img added... ({} img in total now)".format(cnt))
 
     print("Initialized")
-    take_photo()
+    take_photo_peltie()
 
+def take_photo_n2():
+    """
+    液チ用の画像を撮影する
+    背景撮影->物体撮影, 保存
+    """
+    cnt = 0
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        return
+
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+    print("============= Take photos! ===================")
+    print("+-------------  Key Instructions --------------+")
+    print("|              p : take Picture                |")
+    print("|              i : Initialize (set background) |")
+    print("|              q : Quit                        |")
+    print("+----------------------------------------------+")
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Failed to grab frame.")
+            break
+
+        back_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        diff = cv2.absdiff(stream_gray, back_gray)
+        filter = cv2.medianBlur(diff, FILTER_SIZE)  # medianフィルターの適用(ノイズ除去)
+        mask = cv2.threshold(filter, GRAY_THR, 255, cv2.THRESH_BINARY)[1]
+        cv2.imshow("mask", mask)
+        cv2.moveWindow("mask", 700, 0)
+
+        lines = cv2.HoughLinesP(
+            mask,
+            RHO_HOUGH,
+            THETA_HOUGH,
+            threshold=COUNT_HOUGH,
+            minLineLength=MIN_LEN_HOUGH,
+            maxLineGap=MAX_GAP_HOUGH,
+        )
+
+        imshow_rect(frame.copy(), lines, PADDING)  # 5本までの直線を表示
+
+        wkey = cv2.waitKey(500) & 0xFF  # 0.5秒待つ
+        if wkey == ord("q"):
+            cv2.destroyAllWindows()
+            cap.release()
+            return
+        elif wkey == ord("i"):
+            cv2.destroyAllWindows()
+            cap.release()
+            break
+        elif wkey == ord("p"):
+            if CUT_MODE:
+                num = save_cutimg(frame, lines)
+                if num > 0:
+                    cnt += num
+                    print("{} new img added... ({} img in total now)".format(num, cnt))
+            else:
+                save_img(frame)
+                cnt += 1
+                print("1 new img added... ({} img in total now)".format(cnt))
+
+    print("Initialized")
+    take_photo_n2()
 
 if __name__ == "__main__":
-    take_photo()
+    # take_photo_peltie() # ペルチェ霧箱用
+    take_photo_n2() # 液チ霧箱用

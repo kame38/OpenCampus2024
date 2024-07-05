@@ -2,16 +2,17 @@ import os
 import cv2
 import shutil
 
-from param import SRC_DIR, DEST_ALPHA, DEST_COSMIC  # param.pyを確認!!
+from param import SRC_DIR, DEST_ALPHA, DEST_COSMIC, DEST_NOISE  # param.pyを確認!!
 
 
-def label_img(src_dir, dest_alpha, dest_cosmic):
+def label_img(src_dir, dest_alpha, dest_cosmic, dest_noise):
     """
     tmp内の画像をalphaとcosmicに分類
     引数：
     src_dir: 元画像の場所
     dest_alpha: alphaの保存先
     dest_cosmic: cosmicの保存先
+    dest_noise: noiseの保存先
     """
 
     images = [img for img in os.listdir(src_dir) if img.lower().endswith("jpg")]
@@ -19,6 +20,7 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
     print("************* Key Instructions *************\n")
     print("                Alpha    ->   a")
     print("              Cosmic ray ->   c")
+    print("                Noise    ->   n")
     print("                 Skip    ->   s")
     print("                Delete   ->   d\n")
     print("********************************************")
@@ -40,6 +42,10 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
                 shutil.move(image_path, os.path.join(dest_cosmic, image))
                 print(f"Moved {image} to {dest_cosmic}")
                 break
+            if key == ord("n"):
+                shutil.move(image_path, os.path.join(dest_noise, image))
+                print(f"Moved {image} to {dest_noise}")
+                break
             elif key == ord("s"):
                 print(f"Skipped {image}")
                 break
@@ -54,4 +60,4 @@ def label_img(src_dir, dest_alpha, dest_cosmic):
 
 
 if __name__ == "__main__":
-    label_img(SRC_DIR, DEST_ALPHA, DEST_COSMIC)
+    label_img(SRC_DIR, DEST_ALPHA, DEST_COSMIC, DEST_NOISE)

@@ -274,5 +274,5 @@ def take_photo_n2():
     take_photo_n2()
 
 if __name__ == "__main__":
-    # take_photo_peltie() # ペルチェ霧箱用
-    take_photo_n2() # 液チ霧箱用
+    # take_photo_peltie() # CASE1: ペルチェ霧箱用
+    take_photo_n2() # CASE2:　液チ霧箱用

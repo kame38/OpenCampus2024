@@ -9,31 +9,35 @@ import torch.nn.functional as F
 import torch.utils
 from torchvision import transforms
 import numpy as np
+from train_net import NeuralNet
+from param import (
+    CKPT_NET,
+    OBJ_NAMES,
+    RHO_HOUGH,
+    THETA_HOUGH,
+    COUNT_HOUGH,
+    MIN_LEN_HOUGH,
+    MAX_GAP_HOUGH,
+    GRAY_THR,
+    RAY_COUNT_MAX,
+    SHOW_COLOR,
+    NUM_CLASSES,
+    CHANNELS,
+    PADDING,
+    FILTER_SIZE,
+)  # param.pyを確認!!
 
-# # ペルチェ霧箱用のリアルタイム飛跡検出プログラム
-# # 背景画像ははじめに設定し、固定する
-# # 背景画像の更新が少ないので、飛跡が多く、ノイズが少ない場合の物体検出に最適
-# # 液チ霧箱を使う場合は、260行目以降を使う
 
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# from param import (
-#     CKPT_NET,
-#     OBJ_NAMES,
-#     RHO_HOUGH,
-#     THETA_HOUGH,
-#     COUNT_HOUGH,
-#     MIN_LEN_HOUGH,
-#     MAX_GAP_HOUGH,
-#     GRAY_THR,
-#     RAY_COUNT_MAX,
-#     SHOW_COLOR,
-#     NUM_CLASSES,
-#     CHANNELS,
-#     PADDING,
-#     FILTER_SIZE,
-# )  # param.pyを確認!!
+""" CASE1: ペルチェ霧箱
 
-# from train_net import NeuralNet
+- ペルチェ霧箱用のリアルタイム飛跡検出プログラム
+- 背景画像ははじめに設定し、固定する
+- 背景画像の更新が少ないので、飛跡が多く、ノイズが少ない場合の物体検出に最適
+- 液チ霧箱を使う場合は、260行目以降を使う 
+
+"""
 
 # # 画像データ変換定義
 # # Resizeと, classifierの最初のLinear入力が関連
@@ -260,29 +264,17 @@ import numpy as np
 #         cv2.destroyAllWindows()
 
 
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# 液チ霧箱用のリアルタイム飛跡検出プログラム
-# 0.5sごとにフレームを更新し、１つ前のフレームを背景画像に適用
-# 背景画像の更新が多いので、飛跡が少なく、ノイズが多い場合に最適
-# ペルチェ霧箱を使う場合は、飛跡が多いので上のコードを使う
+""" CASE2: 液体窒素霧箱 
 
-CKPT_NET = "trained_net.ckpt"  # 学習済みパラメータファイル
-OBJ_NAMES = ["alpha", "cosmic", "noise"]  # 各クラスの表示名
-GRAY_THR = 5  # 濃度変化の閾値
-FILTER_SIZE = 5  # medianフィルタのサイズ
-RHO_HOUGH = 5  # Hough変換の距離解像度
-THETA_HOUGH = 5 * np.pi / 180  # Hough変換の角度解像度
-COUNT_HOUGH = 50  # Hough変換の閾値
-MIN_LEN_HOUGH = 10  # 検出する直線の最小長さ
-MAX_GAP_HOUGH = 50  # 直線として認識する最大の間隔
-PADDING = 50  # 枠の大きさに余裕を持たせる
-RAY_COUNT_MAX = 2  # バッチサイズ(一度に検出する物体の数)の上限
-SHOW_COLOR = (255, 191, 0)  # 枠の色(B,G,R) green
-NUM_CLASSES = 3  # クラス数
-CHANNELS = 1  # 色のチャンネル数(BGR:3, グレースケール:1)
+- 液チ霧箱用のリアルタイム飛跡検出プログラム
+- 0.5sごとにフレームを更新し、１つ前のフレームを背景画像に適用
+- 背景画像の更新が多いので、飛跡が少なく、ノイズが多い場合に最適
+- ペルチェ霧箱を使う場合は、飛跡が多いので上のコードを使う
 
-from train_net import NeuralNet
+"""
+
 
 # 画像データ変換定義
 # Resizeと, classifierの最初のLinear入力が関連

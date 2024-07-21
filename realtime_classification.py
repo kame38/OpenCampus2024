@@ -370,24 +370,23 @@ def judge_what(img, probs_list, pos_list):
     # インデックスを物体名に変換, 物体の位置に物体名と確信度を書き込み表示
     results = []
     for (idx, prob), pos in zip(ip_list, pos_list):
-        if OBJ_NAMES[idx] == "cosmic":
-            continue  # cosmicの場合は枠と名前を表示しない
         x, y, w, h = pos
         x -= PADDING
         y -= PADDING
         w += 2 * PADDING
         h += 2 * PADDING
-        cv2.rectangle(img, (x, y), (x + w, y + h), SHOW_COLOR, 2)
-        cv2.putText(
-            img,
-            "%s:%.1f%%" % (OBJ_NAMES[idx], prob * 100),
-            (x + 5, y + 20),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            SHOW_COLOR,
-            thickness=2,
-        )
-    results.append(f"{OBJ_NAMES[idx]}: {prob * 100:.1f}% at ({x}, {y})")
+        if OBJ_NAMES[idx] != "noise":  # noiseの場合は枠と名前を表示しない
+            cv2.rectangle(img, (x, y), (x + w, y + h), SHOW_COLOR, 2)
+            cv2.putText(
+                img,
+                "%s:%.1f%%" % (OBJ_NAMES[idx], prob * 100),
+                (x + 5, y + 20),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                SHOW_COLOR,
+                thickness=2,
+            )
+        results.append(f"{OBJ_NAMES[idx]}: {prob * 100:.1f}% at ({x}, {y})")
     return results
 
 

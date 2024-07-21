@@ -30,7 +30,7 @@ NUM_EPOCHS = 100  # 学習回数
 LEARNING_RATE = 0.01  # 学習率
 
 # ================= realtime_classification.py ==============================
-CKPT_NET = "trained_net.ckpt"  # 学習済みパラメータファイル
+# CKPT_NET
 OBJ_NAMES = ["alpha", "cosmic", "noise"]  # 各クラスの表示名
 SHOW_COLOR = (255, 191, 0)  # 枠の色(B,G,R) green
 CHANNELS = 1  # 色のチャンネル数(BGR:3, グレースケール:1)
@@ -76,7 +76,7 @@ CHANNELS = 1  # 色のチャンネル数(BGR:3, グレースケール:1)
 # LEARNING_RATE = 0.01  # 学習率
 
 # # =================== realtime_classification.py ==============================
-# CKPT_NET = "trained_net.ckpt"  # 学習済みパラメータファイル
+# # CKPT_NET
 # OBJ_NAMES = ["alpha", "cosmic", "noise"]  # 各クラスの表示名
 # SHOW_COLOR = (255, 191, 0)  # 枠の色(B,G,R) green
 # NUM_CLASSES = 3  # クラス数

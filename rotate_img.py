@@ -39,7 +39,7 @@ def augment_directory(directory):
             # 拡張された画像を再度読み込まないように、オリジナルの画像だけを処理
             if "rotated" not in filename and "flipped" not in filename:
                 image_path = os.path.join(directory, filename)
-                augment_image(image_path, directory)
+                augment(image_path, directory)
                 print(f"Processed {filename}")
 
 

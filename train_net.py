@@ -200,7 +200,7 @@ def main():
         avg_v_acc = v_acc / len(val_loader.dataset)
         # --------------------------------------------------------------
         print(
-            "\rEpoch [{}/{}] | Train [oss:{:.3f}, acc:{:.3f}] | Val [loss:{:.3f}, acc:{:.3f}]".format(
+            "\rEpoch [{}/{}] | Train [loss:{:.3f}, acc:{:.3f}] | Val [loss:{:.3f}, acc:{:.3f}]".format(
                 epoch + 1, NUM_EPOCHS, avg_t_loss, avg_t_acc, avg_v_loss, avg_v_acc
             ),
             end="",
@@ -287,6 +287,7 @@ def graph():
     plt.title("Training and validation accuracy")
     plt.grid()
     plt.show()
+    plt.savefig("train_net.png")
 
 
 if __name__ == "__main__":

@@ -204,6 +204,7 @@ def take_photo_peltie():
     print("Initialized")
     take_photo_peltie()
 
+
 def take_photo_n2():
     """
     液チ用の画像を撮影する
@@ -225,13 +226,21 @@ def take_photo_n2():
     print("|              q : Quit                        |")
     print("+----------------------------------------------+")
 
+    last_background_frame = None  # 最後の背景フレームを保持
+
     while True:
         ret, frame = cap.read()
         if not ret:
             print("Failed to grab frame.")
             break
 
-        back_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        if last_background_frame is not None:
+            back_gray = cv2.cvtColor(last_background_frame, cv2.COLOR_BGR2GRAY)
+        else:
+            back_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        last_background_frame = frame.copy()  # 現在のフレームを次の背景として保存
+
         stream_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         diff = cv2.absdiff(stream_gray, back_gray)
         filter = cv2.medianBlur(diff, FILTER_SIZE)  # medianフィルターの適用(ノイズ除去)
@@ -273,6 +282,7 @@ def take_photo_n2():
     print("Initialized")
     take_photo_n2()
 
+
 if __name__ == "__main__":
     # take_photo_peltie() # CASE1: ペルチェ霧箱用
-    take_photo_n2() # CASE2:　液チ霧箱用
+    take_photo_n2()  # CASE2:　液チ霧箱用

@@ -30,7 +30,9 @@ def conf_matrix():
         ]
     )
 
-    test_dataset = datasets.ImageFolder(root=DATA_DIR, transform=val_transforms) # 本当はTEST_DATA_DIR !!
+    test_dataset = datasets.ImageFolder(
+        root=DATA_DIR, transform=val_transforms
+    )  # 本当はTEST_DATA_DIR !!
     val_loader = torch.utils.data.DataLoader(
         dataset=test_dataset, batch_size=10, shuffle=False
     )
@@ -72,7 +74,7 @@ def conf_matrix():
     # 各クラスの識別率（efficiency）の計算
     class_accuracies = cm.diagonal() / cm.sum(axis=1)
     for i, accuracy in enumerate(class_accuracies):
-        print(f"Class '{full_dataset.classes[i]}': Efficiency = {accuracy * 100:.2f}%")
+        print(f"Class '{test_dataset.classes[i]}': Efficiency = {accuracy * 100:.2f}%")
 
     print(f"Accuracy: {acc * 100:.2f}%")
 

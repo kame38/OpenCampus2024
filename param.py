@@ -45,6 +45,8 @@ CHANNELS = 1  # 色のチャンネル数(BGR:3, グレースケール:1)
 # PADDING
 # FILTER_SIZE
 
+# ============== conf_matrix.py =============================
+TEST_DATA_DIR = "image_data/test"  # テストデータのフォルダ名
 
 
 """ CASE2: 液体窒素霧箱 """
@@ -90,3 +92,6 @@ CHANNELS = 1  # 色のチャンネル数(BGR:3, グレースケール:1)
 # # MAX_GAP_HOUGH
 # # PADDING
 # # RAY_COUNT_MAX
+
+# ============== conf_matrix.py =============================
+# TEST_DATA_DIR = "image_data/test"  # テストデータのフォルダ名

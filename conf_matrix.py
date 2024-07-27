@@ -5,7 +5,7 @@ from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-from param import DATA_DIR, CKPT_NET, NUM_CLASSES
+from param import TEST_DATA_DIR, CKPT_NET, NUM_CLASSES, DATA_DIR
 from train_net import NeuralNet, CustomDataset
 
 
@@ -30,9 +30,9 @@ def conf_matrix():
         ]
     )
 
-    full_dataset = datasets.ImageFolder(root=DATA_DIR, transform=val_transforms)
+    test_dataset = datasets.ImageFolder(root=DATA_DIR, transform=val_transforms) # 本当はTEST_DATA_DIR !!
     val_loader = torch.utils.data.DataLoader(
-        dataset=full_dataset, batch_size=10, shuffle=False
+        dataset=test_dataset, batch_size=10, shuffle=False
     )
 
     all_labels = []
@@ -51,20 +51,28 @@ def conf_matrix():
     cm = confusion_matrix(all_labels, all_preds)
     acc = accuracy_score(all_labels, all_preds)
 
+    # 混同行列の正規化
+    cm_normalized = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
+
     # 混同行列の可視化
     plt.figure(figsize=(10, 8))
     sns.heatmap(
-        cm,
+        cm_normalized,
         annot=True,
-        fmt="d",
+        fmt=".2f",
         cmap="Blues",
-        xticklabels=full_dataset.classes,
-        yticklabels=full_dataset.classes,
+        xticklabels=test_dataset.classes,
+        yticklabels=test_dataset.classes,
     )
-    plt.xlabel("Predicted")
+    plt.xlabel("Prediction")
     plt.ylabel("True")
-    plt.title("Confusion Matrix")
+    plt.title("Normalized Confusion Matrix")
     plt.savefig("ConfMatrix.png")
+
+    # 各クラスの識別率（efficiency）の計算
+    class_accuracies = cm.diagonal() / cm.sum(axis=1)
+    for i, accuracy in enumerate(class_accuracies):
+        print(f"Class '{full_dataset.classes[i]}': Efficiency = {accuracy * 100:.2f}%")
 
     print(f"Accuracy: {acc * 100:.2f}%")
 

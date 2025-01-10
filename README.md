@@ -63,7 +63,8 @@ git checkout peltie
 
 ## <dt>学習モデル</dt>
 
-<img width="1148" alt="スクリーンショット 2025-01-10 9 26 07" src="https://github.com/user-attachments/assets/139e8487-9f70-4166-ba7b-ba310d5d0148" />
+<img width="908" alt="スクリーンショット 2025-01-10 22 04 05" src="https://github.com/user-attachments/assets/47ed5bf9-ace7-4168-985c-c818232c40d6" />
+
 
 
 

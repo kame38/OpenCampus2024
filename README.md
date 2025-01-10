@@ -58,7 +58,7 @@ $ source .venv/bin/activate
 
 ## <dt>学習モデル</dt>
 
-以下に示されている **畳み込みニューラルネットワーク（CNN）** を使用している
+
 
 <br><br>
 

@@ -12,9 +12,9 @@ webcamera で霧箱内の映像を取得し、背景差分で飛跡を抽出し�
 - venvの仮想環境を作成後、有効化してpip installを実行。
 
 ```.sh
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-(.venv) $ pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## <dt>使い方</dt>
@@ -25,10 +25,12 @@ $ source .venv/bin/activate
 - 飛跡の見えていない状態で背景を撮影したら、飛跡の撮影を行うと飛跡部分を切り取った画像が **image_data/tmp** に保存される。
 - グレースケールした後で、背景画像との差分の絶対値にメディアンフィルターを適用し、ノイズ除去を行なった状態で二値化し、マスクをかける。このとき、Hough 変換によって直線検出されたものの一部が緑の枠に囲まれて表示される。
 - 液体窒素の霧箱を使う場合、背景画像は定期的に更新されるがペルチェ霧箱では背景画像を最初に撮影する。ペルチェ霧箱を使う場合はbranchを切り替えるように。
+
 ```.sh
-$ git checkout peltie
+git checkout peltie
 ```
-- <br><br>
+
+<br><br>
 
 </dd>
 

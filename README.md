@@ -58,17 +58,13 @@ $ source .venv/bin/activate
 
 ## <dt>学習モデル</dt>
 
+<img width="1148" alt="スクリーンショット 2025-01-10 9 26 07" src="https://github.com/user-attachments/assets/139e8487-9f70-4166-ba7b-ba310d5d0148" />
 
 
-<br><br>
-
-## <dt>結果</dt>
-
-以下に得られた結果の一例を示す
 
 ## <dt>参考</dt>
 
-コード作成をするにあたり、以下の文献を参考にした。
+作成にあたり、以下の文献を参考にした。
 
 - Raspberry 3 B+ ＆ PyTorchの深層学習で、カメラ映像内の複数物体をリアルタイム分類
   
